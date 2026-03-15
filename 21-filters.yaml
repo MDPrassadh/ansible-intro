@@ -1,0 +1,67 @@
+- name: demo on filters/functions
+  hosts: local  
+  connection: local 
+  tasks: 
+  - name: print the default mysql_variables 
+    ansible.builtin.debug:
+      msg: "Hello {{ course | default('Ansible Learning with PRASSADH') }}"               
+  
+  - name: convert to uppercase
+    vars: 
+      greetings: "Hello Madam"
+    ansible.builtin.debug:
+      msg: " {{ greetings | upper }}"
+
+  - name: convert to lowercase
+    vars: 
+      greetings: "HELLO MADAM"
+    ansible.builtin.debug:
+      msg: " {{ greetings | lower }}"
+
+  - name: Get the unique values 
+    vars:
+      numbers: [1, 1, 1, 2, 3, 4, 4, 6, 5, 7, 8, 9, 8]
+    ansible.builtin.debug:
+      msg: "{{ numbers | unique }}"
+
+  - name: Get the unique values
+    vars:
+      numbers: [1, 1, 1, 2, 3, 4, 4, 6, 5, 7, 8, 9, 8, 15, 25]
+    ansible.builtin.debug:
+      msg: "{{ numbers | unique | join(', ') }}"
+  
+  - name: Get the min and max values
+    vars:
+      numbers: [1, 1, 1, 2, 3, 4, 4, 6, 5, 7, 8, 9, 8, 15, 25]
+    ansible.builtin.debug:
+      msg: " min: {{ numbers | min }}  mmax: {{ numbers | max }}"
+  
+  - name: convert map to list 
+    vars: 
+      course:
+        name: "Devops with AWS"
+        duration: 120
+        trainer: "tilak"
+    ansible.builtin.debug:
+      msg: "{{ course | dict2items }}"
+
+  - name: Convert list to map
+    vars:
+      course_list:
+        - { key: "name", value: "Devops with AWS" }
+        - { key: "duration", value: 120 }
+        - { key: "trainer", value: "tilak" }
+    ansible.builtin.debug:
+      msg: "{{ course_list | items2dict }}"
+
+  - name: check ip address valid or not..?
+    vars:
+        myip: "192.168.255.255" 
+    ansible.builtin.debug:
+      msg: "{{ myip | ansible.utils.ipv4 }}"
+
+  - name: check ip address valid or not..?
+    vars:
+        myip: "256.168.255.255" 
+    ansible.builtin.debug:
+      msg: "{{ myip | ansible.utils.ipv4 }}"
