@@ -1,0 +1,11 @@
+- name: Print course details using variable files
+  hosts: web
+  
+  tasks:
+    - name: Print course details from variable file
+      ansible.builtin.debug:
+        msg: "Course: {{ COURSE }}, Duration: {{ DURATION }}, Trainer: {{ TRAINER }}"
+
+# Ansible-Linux]$ ansible-playbook -i inventory.ini 10-vars-from-args.yaml -e "COURSE=gcp DURATION=2 TRAINER=PRASSADH"
+
+# in cli ansible-playbook 10-vars-from-args.yaml -e "COURSE='DEVOPS with MULTI-CLOUD' DURATION='6 months' TRAINER='MDP'"
