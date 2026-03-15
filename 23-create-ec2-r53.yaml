@@ -1,0 +1,97 @@
+---
+- name: Provision EC2 instances and Route53 records
+  hosts: localhost
+  connection: local
+  become: true   # needed for dnf/yum installs
+
+  vars:
+    subnet_id: subnet-0180bc868530ad0b1
+    sg_id: sg-02a5e0c53ec4cd644
+    ami_id: ami-0d8d3b1122e36c000
+    region: us-east-1
+    zone: jioairlines.online
+    key_name: ansible
+    instance_type: t3.micro
+    instances:
+      - mysql
+      - backend
+      - frontend
+
+  tasks:
+    # Install required system packages
+    - name: Install system packages
+      ansible.builtin.yum:
+        name:
+          - python3-pip
+          - unzip
+          - curl
+        state: present
+
+    # Install Python libraries for AWS
+    - name: Install Python libraries for AWS
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+          - netaddr
+        executable: pip3
+
+    # Install amazon.aws collection
+    - name: Install amazon.aws collection
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install amazon.aws
+      ignore_errors: yes
+
+    # Launch EC2 instances
+    - name: Launch EC2 instances
+      amazon.aws.ec2_instance:
+        name: "{{ item }}"
+        vpc_subnet_id: "{{ subnet_id }}"
+        instance_type: "{{ instance_type }}"
+        security_group: "{{ sg_id }}"
+        image_id: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+      loop: "{{ instances }}"
+      register: ec2_instances
+
+    - name: Show EC2 instance details
+      ansible.builtin.debug:
+        var: ec2_instances
+
+    # Create private Route53 records
+    - name: Create private Route53 records for all instances
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "{{ item.item }}.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ item.instances[0].private_ip_address }}"
+        wait: true
+      loop: "{{ ec2_instances.results }}"
+      register: r53_private
+
+    # Create public Route53 record for frontend
+    - name: Create public Route53 record for frontend
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ item.instances[0].public_ip_address }}"
+        wait: true
+        overwrite: true
+      loop: "{{ ec2_instances.results }}"
+      when: item.item == "frontend"
+      register: r53_public
+
+    - name: Print Route53 private record results
+      ansible.builtin.debug:
+        msg: "{{ item.item.item }}.{{ zone }} record created"
+      loop: "{{ r53_private.results }}"
+
+    - name: Print Route53 public record result
+      ansible.builtin.debug:
+        var: r53_public
