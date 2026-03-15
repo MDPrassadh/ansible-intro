@@ -1,0 +1,48 @@
+- name: Print course details using variable files
+  hosts: web
+  
+   #through play level----
+  vars:  # Define variables at the all play levels use any tasks of this variables
+    COURSE: "DEVOPS with AWS FROM play level"
+    DURATION: "3 months FROM play level"
+    TRAINER: "SKR FROM play level"
+
+# throguh vars_files -------
+  vars_files:
+  - vars.yaml
+
+  # through prompt   --------
+
+  vars_prompt:  # Prompt the user for input when the playbook runs
+    - name: "COURSE"   # Variable name to store the input
+      prompt: "Enter the course name FROM PROMPT"  # Message shown to the user
+      private: no  # Show input as plain text (not hidden)
+
+    - name: "DURATION"
+      prompt: "Enter the course duration"
+      private: no
+
+    - name: "TRAINER"
+      prompt: "Enter the trainer's name"
+      private: no
+
+  # throguh task level -------------
+  tasks:
+    - name: Print course details from variable file
+      vars:  # Define variables at the all task levels use any tasks of this variables
+          
+          COURSE: "DEVOPS with AWS FROM task level"  # 2 
+          DURATION: "3 months FROM task level"
+          TRAINER: "SKR FROM task level"
+      ansible.builtin.debug:
+              msg: "Course: {{ COURSE }}" 
+
+
+
+ # preference of variables 
+ # 1 cli /args
+ # 2 task level 
+ # 3 vars_files seperate file variables define 
+ # 4 prompt when i apply........... yaml file it will ask prompt to print 
+ # 5 play level 
+ # 6 
