@@ -5,7 +5,7 @@
   become: true
 
   collections:
-    - amazon.aws   # declare the AWS collection
+    - amazon.aws
 
   vars:
     subnet_id: subnet-0180bc868530ad0b1
@@ -21,7 +21,6 @@
       - frontend
 
   tasks:
-    # Ensure required system packages
     - name: Install system packages
       ansible.builtin.yum:
         name:
@@ -30,7 +29,6 @@
           - curl
         state: present
 
-    # Install Python libraries for AWS modules
     - name: Install Python libraries for AWS
       ansible.builtin.pip:
         name:
@@ -39,7 +37,6 @@
           - netaddr
         executable: pip3
 
-    # Launch EC2 instances
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
         name: "{{ item }}"
@@ -56,9 +53,8 @@
       ansible.builtin.debug:
         var: ec2_instances
 
-    # Create private Route53 records
-    - name: Create private Route53 records for all instances
-      amazon.aws.route53_record:
+    - name: Create private Route53 records
+      amazon.aws.route53:
         state: present
         zone: "{{ zone }}"
         record: "{{ item.item }}.{{ zone }}"
@@ -69,9 +65,8 @@
       loop: "{{ ec2_instances.results }}"
       register: r53_private
 
-    # Create public Route53 record for frontend
     - name: Create public Route53 record for frontend
-      amazon.aws.route53_record:
+      amazon.aws.route53:
         state: present
         zone: "{{ zone }}"
         record: "{{ zone }}"
