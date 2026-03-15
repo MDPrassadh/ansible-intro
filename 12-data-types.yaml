@@ -1,0 +1,27 @@
+- name: Devops Course Details 
+  hosts: local 
+  connection: local # for local ocnnection ansible server 
+  vars:
+      course: "Devops With AWS" # string 
+      duration: 120 # number int 
+      topics: # list 
+      - Linux
+      - Shell 
+      - Ansible 
+      - Terraform 
+      - Aws 
+      - k8 
+      live: true # boolean
+      tools: # map/dictionary
+        ci: jekins # single one is called string 
+        cm: ansible 
+        cloud: aws 
+        aws:   # vlist examples 
+        - IAM 
+        - S3 
+        - EC2 
+  tasks: 
+  - name: print the course information
+    ansible.builtin.debug:
+       msg: "Hi Iam Learning {{ course }}, with duration: {{ duration}}, covering with topics {{ topics }}, with tools {{ tools }} streaming on {{ live }}"
+       
