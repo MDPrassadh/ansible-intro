@@ -1,0 +1,39 @@
+- name: destroy ec2 and r53
+  hosts: localhost
+  connection: local
+
+  vars:
+    region: us-east-1
+    zone: jioairlines.online
+
+    instances:
+      - mysql
+      - backend
+      - frontend
+
+  tasks:
+
+    - name: delete private r53 records
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ zone }}"
+        record: "{{ item }}.{{ zone }}"
+        type: A
+      loop: "{{ instances }}"
+
+
+    - name: delete public r53 record for frontend
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ zone }}"
+        record: "{{ zone }}"
+        type: A
+
+
+    - name: terminate ec2 instances
+      amazon.aws.ec2_instance:
+        state: absent
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ item }}"
+      loop: "{{ instances }}"
