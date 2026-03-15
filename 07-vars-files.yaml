@@ -1,0 +1,8 @@
+- name: Print course details using variable files
+  hosts: web
+  vars_files:  # Load variables from an external file
+    - vars.yaml  # This file should contain the variables COURSE, DURATION, and TRAINER
+  tasks:
+    - name: Print course details from variable file
+      ansible.builtin.debug:
+        msg: "Course: {{ COURSE }}, Duration: {{ DURATION }}, Trainer: {{ TRAINER }}"
