@@ -5,12 +5,12 @@
   become: true
 
   collections:
-    - amazon.aws   # <-- declare collection here
+    - amazon.aws   # declare the AWS collection
 
   vars:
     subnet_id: subnet-0180bc868530ad0b1
     sg_id: sg-02a5e0c53ec4cd644
-    ami_id: ami-0d8d3b1122e36c000
+    ami_id: ami-0d8d3b1122e36c000   # RHEL 9 AMI
     region: us-east-1
     zone: jioairlines.online
     key_name: ansible
@@ -21,6 +21,7 @@
       - frontend
 
   tasks:
+    # Ensure required system packages
     - name: Install system packages
       ansible.builtin.yum:
         name:
@@ -29,6 +30,7 @@
           - curl
         state: present
 
+    # Install Python libraries for AWS modules
     - name: Install Python libraries for AWS
       ansible.builtin.pip:
         name:
@@ -37,6 +39,7 @@
           - netaddr
         executable: pip3
 
+    # Launch EC2 instances
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
         name: "{{ item }}"
@@ -53,8 +56,9 @@
       ansible.builtin.debug:
         var: ec2_instances
 
-    - name: Create private Route53 records
-      amazon.aws.route53_record:   # <-- correct module name
+    # Create private Route53 records
+    - name: Create private Route53 records for all instances
+      amazon.aws.route53_record:
         state: present
         zone: "{{ zone }}"
         record: "{{ item.item }}.{{ zone }}"
@@ -65,8 +69,9 @@
       loop: "{{ ec2_instances.results }}"
       register: r53_private
 
+    # Create public Route53 record for frontend
     - name: Create public Route53 record for frontend
-      amazon.aws.route53_record:   # <-- correct module name
+      amazon.aws.route53_record:
         state: present
         zone: "{{ zone }}"
         record: "{{ zone }}"
