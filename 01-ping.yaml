@@ -1,0 +1,12 @@
+- name: Ping all hosts
+  hosts: local 
+  connection: local                # Runs on all hosts in inventory
+  gather_facts: no          # Better to disable facts here (ping doesn’t need them)
+  tasks:
+    - name: Ping the hosts
+      ansible.builtin.ping: # Ping module checks connectivity
+      register: ping_result # Save results into a variable
+
+    - name: Display ping results
+      debug:
+        var: ping_result    # Print the registered variable
