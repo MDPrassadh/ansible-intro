@@ -1,0 +1,7 @@
+- name: Multi-playbook example
+  hosts: web
+  gather_facts: no
+  tasks:
+    - name: Display a message for all hosts
+      debug:
+        msg: "This is a multi-playbook example."
