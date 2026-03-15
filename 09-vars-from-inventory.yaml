@@ -1,0 +1,7 @@
+- name: Print course details using variable files
+  hosts: web
+  
+  tasks:
+    - name: Print course details from variable file
+      ansible.builtin.debug:
+        msg: "Course: {{ COURSE }}, Duration: {{ DURATION }}, Trainer: {{ TRAINER }}"
