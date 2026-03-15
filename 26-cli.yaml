@@ -1,0 +1,31 @@
+---
+- name: Install AWS CLI v2 on RHEL9
+  hosts: localhost
+  connection: local
+  become: true
+
+  tasks:
+    - name: Download AWS CLI v2
+      ansible.builtin.get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+
+    - name: Extract AWS CLI v2
+      ansible.builtin.unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI v2
+      ansible.builtin.command:
+        cmd: /tmp/aws/install
+      ignore_errors: yes
+
+    - name: Verify AWS CLI version
+      ansible.builtin.command: aws --version
+      register: aws_version
+      ignore_errors: yes
+
+    - name: Show AWS CLI version
+      ansible.builtin.debug:
+        var: aws_version.stdout
