@@ -1,0 +1,19 @@
+- name: command vs shell 
+  hosts: local 
+  connection: local 
+  tasks:
+  
+
+  - name: execute the command  # shell login into therver and execute  isnide the server  but not secure shell
+    ansible.builtin.shell: ls -lrth > /tmp/output.txt
+  
+  # - name: execute the command  # coomand is not redirecting and piping this is very secure ...everything doing outside only
+  #   ansible.builtin.command: ls -lrth > /tmp/output.txt
+  
+  - name: check the process   # shell module execute
+    ansible.builtin.shell: ps -ef | grep ssh 
+    register: output 
+
+  # - name: check the process  # command module not execute
+  #   ansible.builtin.command: ps -ef | grep ssh 
+  #   register: output 
