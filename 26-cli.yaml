@@ -22,11 +22,11 @@
         dest: /tmp
         remote_src: yes
 
-    - name: Install AWS CLI v2
+    - name: Install or update AWS CLI v2
       ansible.builtin.command:
-        cmd: /tmp/aws/install
+        cmd: /tmp/aws/install --update
 
-    - name: Verify AWS CLI version (explicit path)
+    - name: Verify AWS CLI version
       ansible.builtin.command: /usr/local/bin/aws --version
       register: aws_version
 
