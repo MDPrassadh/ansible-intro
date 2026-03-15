@@ -26,8 +26,8 @@
       ansible.builtin.command:
         cmd: /tmp/aws/install
 
-    - name: Verify AWS CLI version
-      ansible.builtin.command: aws --version
+    - name: Verify AWS CLI version (explicit path)
+      ansible.builtin.command: /usr/local/bin/aws --version
       register: aws_version
 
     - name: Show AWS CLI version
