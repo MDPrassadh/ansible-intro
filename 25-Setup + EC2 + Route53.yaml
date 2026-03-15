@@ -1,0 +1,136 @@
+---
+- name: Setup environment and create EC2 + Route53
+  hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: no
+
+  vars:
+    region: us-east-1
+    subnet_id: subnet-0648e016f60665d39
+    sg_id: sg-02a5e0c53ec4cd644
+    ami_id: ami-0ad50334604831820
+    zone: jioairlines.online
+
+    instances:
+      - mysql
+      - backend
+      - frontend
+
+  tasks:
+
+  # Install required packages
+
+  - name: Install system packages
+    ansible.builtin.yum:
+      name:
+        - python3-pip
+        - unzip
+        - curl
+      state: present
+
+  - name: Install Python libraries for AWS
+    ansible.builtin.pip:
+      name:
+        - boto3
+        - botocore
+        - netaddr
+      executable: pip3
+
+  - name: Install amazon.aws collection
+    ansible.builtin.command:
+      cmd: ansible-galaxy collection install amazon.aws
+    ignore_errors: yes
+
+
+  # Install AWS CLI
+
+  - name: Download AWS CLI
+    ansible.builtin.get_url:
+      url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+      dest: /tmp/awscliv2.zip
+
+  - name: Extract AWS CLI
+    ansible.builtin.unarchive:
+      src: /tmp/awscliv2.zip
+      dest: /tmp
+      remote_src: yes
+
+  - name: Install AWS CLI
+    ansible.builtin.command:
+      cmd: /tmp/aws/install
+    ignore_errors: yes
+
+
+  # Verify AWS access
+
+  - name: Check AWS identity
+    ansible.builtin.command: aws sts get-caller-identity
+    register: aws_identity
+
+  - name: Show AWS identity
+    ansible.builtin.debug:
+      var: aws_identity.stdout
+
+
+  # Create EC2 instances
+
+  - name: Launch EC2 instances
+    amazon.aws.ec2_instance:
+      name: "{{ item }}"
+      region: "{{ region }}"
+      image_id: "{{ ami_id }}"
+      instance_type: t3.micro
+      key_name: ansible
+      vpc_subnet_id: "{{ subnet_id }}"
+      security_group_ids:
+        - "{{ sg_id }}"
+      wait: true
+    loop: "{{ instances }}"
+    register: ec2_instances
+
+  - name: Show instance private IPs
+    ansible.builtin.debug:
+      msg: "{{ item.item }} -> {{ item.instances[0].private_ip_address }}"
+    loop: "{{ ec2_instances.results }}"
+
+
+  # Create Route53 records
+
+  - name: Create private DNS records
+    amazon.aws.route53:
+      state: present
+      zone: "{{ zone }}"
+      record: "{{ item.item }}.{{ zone }}"
+      type: A
+      ttl: 60
+      value: "{{ item.instances[0].private_ip_address }}"
+      wait: true
+    loop: "{{ ec2_instances.results }}"
+    register: r53_result
+
+  - name: Create public DNS record for frontend
+    amazon.aws.route53:
+      state: present
+      zone: "{{ zone }}"
+      record: "{{ zone }}"
+      type: A
+      ttl: 60
+      value: "{{ item.instances[0].public_ip_address }}"
+      wait: true
+      overwrite: true
+    loop: "{{ ec2_instances.results }}"
+    when: item.item == "frontend"
+
+
+  # Display output
+
+  - name: Show created DNS records
+    ansible.builtin.debug:
+      msg: "{{ item.item.item }}.{{ zone }} record created"
+    loop: "{{ r53_result.results }}"
+
+  - name: Show DNS names
+    ansible.builtin.debug:
+      msg: "{{ item }}.{{ zone }}"
+    loop: "{{ instances }}"
