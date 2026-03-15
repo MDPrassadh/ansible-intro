@@ -1,0 +1,20 @@
+- name: Print course details using prompted variables
+  hosts: web
+  gather_facts: no
+  vars_prompt:  # Prompt the user for input when the playbook runs
+    - name: "COURSE"   # Variable name to store the input
+      prompt: "Enter the course name"  # Message shown to the user
+      private: no  # Show input as plain text (not hidden)
+
+    - name: "DURATION"
+      prompt: "Enter the course duration"
+      private: no
+
+    - name: "TRAINER"
+      prompt: "Enter the trainer's name"
+      private: no
+
+  tasks:
+    - name: Print course details from prompted variables
+      ansible.builtin.debug:
+        msg: "Course: {{ COURSE }}, Duration: {{ DURATION }}, Trainer: {{ TRAINER }}"
