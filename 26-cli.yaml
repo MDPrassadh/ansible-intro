@@ -5,10 +5,16 @@
   become: true
 
   tasks:
+    - name: Ensure unzip is installed
+      ansible.builtin.package:
+        name: unzip
+        state: present
+
     - name: Download AWS CLI v2
       ansible.builtin.get_url:
         url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
         dest: /tmp/awscliv2.zip
+        mode: '0644'
 
     - name: Extract AWS CLI v2
       ansible.builtin.unarchive:
@@ -19,12 +25,10 @@
     - name: Install AWS CLI v2
       ansible.builtin.command:
         cmd: /tmp/aws/install
-      ignore_errors: yes
 
     - name: Verify AWS CLI version
       ansible.builtin.command: aws --version
       register: aws_version
-      ignore_errors: yes
 
     - name: Show AWS CLI version
       ansible.builtin.debug:
