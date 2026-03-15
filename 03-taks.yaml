@@ -1,0 +1,14 @@
+# PLAY-01
+- name: PLAY-1
+  hosts : servers
+  tasks:
+    - name: PLAY-1 Task-1 
+      debug:
+        msg: "This is Task-1 of PLAY-1"
+# PLAY-01
+- name: PLAY-2
+  hosts : db
+  tasks:
+    - name: PLAY-2 Task-1 
+      debug:
+        msg: "This is Task-1 of PLAY-2"
