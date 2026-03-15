@@ -2,7 +2,7 @@
 - name: Provision EC2 instances and Route53 records through Ansible
   hosts: localhost
   connection: local
-  become: true
+  #become: true
 
   collections:
     - amazon.aws
