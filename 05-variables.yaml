@@ -1,0 +1,13 @@
+- name: Variables to print 
+  hosts: web 
+  vars:  # Define variables at the all play levels use any tasks of this variables
+    COURSE: "DEVOPS with AWS"
+    DURATION: "3 months"
+    TRAINER: "SKR"
+  tasks:
+    - name: Print course details
+      ansible.builtin.debug:
+        msg: "Course: {{ COURSE }}, Duration: {{ DURATION }}, Trainer: {{ TRAINER }}"
+  
+  
+    
