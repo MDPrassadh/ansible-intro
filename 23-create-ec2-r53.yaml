@@ -8,10 +8,10 @@
 
   vars:
     subnet_id: "subnet-0c45f88e4ff307d56"
-    sg_id: "sg-09a300a3729062c5a"
-    ami_id: "ami-09c813fb71547fc4f"
+    sg_id: "sg-02a5e0c53ec4cd644"
+    ami_id: "ami-0220d79f3f480ecf5"
     region: "us-east-1"
-    zone: "daws81s.online"
+    zone: "jioairlines.online"
     key_name: "ansible"
     instances:
     - mysql
