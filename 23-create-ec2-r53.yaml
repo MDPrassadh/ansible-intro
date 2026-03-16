@@ -7,7 +7,7 @@
     - amazon.aws
 
   vars_files:
-    - vars/aws.yml   # keep subnet_id, sg_id, ami_id, zone, etc. here
+    - vars-aws.yml   # keep subnet_id, sg_id, ami_id, zone, etc. here
 
   tasks:
     - name: Install boto3 and botocore
