@@ -12,7 +12,6 @@
     ami_id: "ami-09c813fb71547fc4f"
     region: "us-east-1"
     zone: "daws81s.online"
-    #key_name: "ansible"
     instances:
     - mysql
     - backend
