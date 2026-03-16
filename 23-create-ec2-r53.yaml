@@ -38,6 +38,12 @@
       - mysql
       - backend
       - frontend
+      - name: ansible to install boto3 and botocore
+        ansible.builtin.pip:
+          name:
+          - boto3
+          - botocore
+          executable: pip3.9
 
   tasks:
     - name: Launch EC2 instances
