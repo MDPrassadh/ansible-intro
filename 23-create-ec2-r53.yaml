@@ -6,7 +6,7 @@
   collections:
     - amazon.aws
 
-  vars_files:
+  vars:
     - vars/aws.yml   # keep subnet_id, sg_id, ami_id, zone, etc. here
 
   tasks:
