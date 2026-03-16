@@ -2,14 +2,3 @@ COURSE: "DEVOPS with AZURE FROM FILES"
 DURATION: "2 months FROM FILES"
 TRAINER: "MDP-SELF-STUDY  FROM FILES"
 
-
-subnet_id: "subnet-081b9e1e9b18fddd4"
-sg_id: "sg-02a5e0c53ec4cd644"
-ami_id: "ami-0220d79f3f480ecf5"
-region: "us-east-1"
-zone: "jioairlines.online"
-key_name: "ansible"
-instances:
-  - mysql
-  - backend
-  - frontend
