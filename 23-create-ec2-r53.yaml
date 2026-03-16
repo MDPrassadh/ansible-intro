@@ -1,62 +1,37 @@
 ---
-- name: Install dependencies on localhost
+- name: Create EC2 and Route53 records
   hosts: localhost
   connection: local
-  become: true   # needed for yum/dnf installs
-  tasks:
-    - name: Install system packages
-      ansible.builtin.yum:
-        name:
-          - python3-pip
-          - unzip
-          - curl
-        state: present
+  become: false
+  collections:
+    - amazon.aws
 
-    - name: Install Python libraries for AWS
+  vars_files:
+    - vars/aws.yml   # keep subnet_id, sg_id, ami_id, zone, etc. here
+
+  tasks:
+    - name: Install boto3 and botocore
       ansible.builtin.pip:
         name:
           - boto3
           - botocore
-          - netaddr
-        executable: pip3
+        executable: pip3.9
 
-- name: Provision EC2 instances and Route53 records
-  hosts: localhost
-  connection: local
-  become: false   # don’t escalate, so boto3 sees ec2-user’s AWS credentials
-  collections:
-    - amazon.aws
-  vars:
-    subnet_id: subnet-0180bc868530ad0b1
-    sg_id: sg-02a5e0c53ec4cd644
-    ami_id: ami-0220d79f3f480ecf5
-    region: us-east-1
-    zone: jioairlines.online
-    key_name: ansible
-    instance_type: t3.micro
-    instances:
-      - mysql
-      - backend
-      - frontend
-      - name: ansible to install boto3 and botocore
-        ansible.builtin.pip:
-          name:
-          - boto3
-          - botocore
-          executable: pip3.9
-
-  tasks:
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
         name: "{{ item }}"
         vpc_subnet_id: "{{ subnet_id }}"
-        instance_type: "{{ instance_type }}"
+        instance_type: "t3.micro"
         security_group: "{{ sg_id }}"
         image_id: "{{ ami_id }}"
         key_name: "{{ key_name }}"
         region: "{{ region }}"
       loop: "{{ instances }}"
       register: ec2_instances
+
+    - name: Print EC2 output
+      ansible.builtin.debug:
+        msg: "{{ ec2_instances }}"
 
     - name: Create private Route53 records
       amazon.aws.route53:
@@ -67,8 +42,8 @@
         ttl: 60
         value: "{{ item.instances[0].private_ip_address }}"
         wait: true
+        overwrite: true
       loop: "{{ ec2_instances.results }}"
-      register: r53_private
 
     - name: Create public Route53 record for frontend
       amazon.aws.route53:
@@ -82,4 +57,4 @@
         overwrite: true
       loop: "{{ ec2_instances.results }}"
       when: item.item == "frontend"
-      register: r53_public
+
