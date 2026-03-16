@@ -6,8 +6,20 @@
   collections:
     - amazon.aws
 
-  vars_files:
-    - 27-vars-aws.yml   # keep subnet_id, sg_id, ami_id, zone, etc. here
+  vars:
+    subnet_id: "subnet-09863c54177764565"
+    sg_id: "sg-09a300a3729062c5a"
+    ami_id: "ami-09c813fb71547fc4f"
+    region: "us-east-1"
+    zone: "daws81s.online"
+    #key_name: "ansible"
+    instances:
+    - mysql
+    - backend
+    - frontend
+     
+
+       # keep subnet_id, sg_id, ami_id, zone, etc. here
 
   tasks:
     - name: Install boto3 and botocore
