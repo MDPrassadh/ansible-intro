@@ -7,7 +7,7 @@
     - amazon.aws
 
   vars:
-    subnet_id: "subnet-0c45f88e4ff307d56"
+    subnet_id: "subnet-0180bc868530ad0b1"
     sg_id: "sg-02a5e0c53ec4cd644"
     ami_id: "ami-0220d79f3f480ecf5"
     region: "us-east-1"
