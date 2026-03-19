@@ -1,0 +1,144 @@
+- name: Expense Tracker EC2 + Route53
+  hosts: local
+  connection: local
+  collections:
+    - amazon.aws
+  vars:
+    region: "us-east-1"
+    ami_id: "ami-0220d79f3f480ecf5"
+    key_name: "ansible"
+    zone: "jioairlines.online"
+
+  tasks:
+    # --- EC2 Instances ---
+    - name: Launch Bastion Host
+      amazon.aws.ec2_instance:
+        name: "bastion"
+        vpc_subnet_id: "{{ frontend_subnet_1a.subnet.id }}"
+        security_group: "{{ bastion_sg.group_id }}"
+        instance_type: "t3.micro"
+        image_id: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+      register: bastion_instance
+
+    - name: Launch Frontend in both AZs
+      amazon.aws.ec2_instance:
+        name: "frontend-{{ item.az }}"
+        vpc_subnet_id: "{{ item.subnet.subnet.id }}"
+        security_group: "{{ frontend_sg.group_id }}"
+        instance_type: "t3.micro"
+        image_id: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+      loop:
+        - { az: "1a", subnet: "{{ frontend_subnet_1a }}" }
+        - { az: "1b", subnet: "{{ frontend_subnet_1b }}" }
+      register: frontend_instances
+
+    - name: Launch Backend in both AZs
+      amazon.aws.ec2_instance:
+        name: "backend-{{ item.az }}"
+        vpc_subnet_id: "{{ item.subnet.subnet.id }}"
+        security_group: "{{ backend_sg.group_id }}"
+        instance_type: "t3.micro"
+        image_id: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+      loop:
+        - { az: "1a", subnet: "{{ backend_subnet_1a }}" }
+        - { az: "1b", subnet: "{{ backend_subnet_1b }}" }
+      register: backend_instances
+
+    - name: Launch MySQL in both AZs
+      amazon.aws.ec2_instance:
+        name: "mysql-{{ item.az }}"
+        vpc_subnet_id: "{{ item.subnet.subnet.id }}"
+        security_group: "{{ db_sg.group_id }}"
+        instance_type: "t3.micro"
+        image_id: "{{ ami_id }}"
+        key_name: "{{ key_name }}"
+        region: "{{ region }}"
+      loop:
+        - { az: "1a", subnet: "{{ db_subnet_1a }}" }
+        - { az: "1b", subnet: "{{ db_subnet_1b }}" }
+      register: db_instances
+
+    # --- Route53 Zones ---
+    - name: Create private hosted zone
+      amazon.aws.route53_zone:
+        zone: "{{ zone }}"
+        vpc_id: "{{ vpc.vpc.id }}"
+        vpc_region: "{{ region }}"
+        state: present
+        private_zone: true
+        comment: "Private zone for internal resolution"
+      register: private_zone
+
+    # --- Public Hosted Zone Records ---
+    - name: Public root record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ frontend_instances.results[0].instances[0].public_ip_address }}"
+        wait: true
+        overwrite: true
+
+    - name: Public frontend record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "frontend.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ frontend_instances.results[0].instances[0].public_ip_address }}"
+        wait: true
+        overwrite: true
+
+    - name: Public bastion record (optional)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "bastion.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ bastion_instance.instances[0].public_ip_address }}"
+        wait: true
+        overwrite: true
+
+    # --- Private Hosted Zone Records ---
+    - name: Private backend record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "backend.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ backend_instances.results[0].instances[0].private_ip_address }}"
+        wait: true
+        overwrite: true
+
+    - name: Private mysql record
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "mysql.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ db_instances.results[0].instances[0].private_ip_address }}"
+        wait: true
+        overwrite: true
+
+    - name: Private bastion record (optional)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "bastion.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ bastion_instance.instances[0].private_ip_address }}"
+        wait: true
+        overwrite: true
