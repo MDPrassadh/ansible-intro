@@ -97,6 +97,7 @@
 
 
 
+
 # RHEL-(9) playbook---------------
 # ---
 # - name: Create EC2 and Route53 records
