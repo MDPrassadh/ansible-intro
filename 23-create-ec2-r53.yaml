@@ -9,25 +9,30 @@
   vars:
     subnet_id: "subnet-0180bc868530ad0b1"
     sg_id: "sg-02a5e0c53ec4cd644"
-    ami_id: "ami-0220d79f3f480ecf5"
+    ami_id: "ami-0030e4319cbf4dbf2"   # Ubuntu 22.04 AMI
     region: "us-east-1"
     zone: "jioairlines.online"
     key_name: "ansible"
     instances:
-    - mysql
-    - backend
-    - frontend
-     
-
-       # keep subnet_id, sg_id, ami_id, zone, etc. here
+      - mysql
+      - backend
+      - frontend
 
   tasks:
+    - name: Ensure Python3 and pip are installed
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
     - name: Install boto3 and botocore
       ansible.builtin.pip:
         name:
           - boto3
           - botocore
-        executable: pip3.9
+        executable: pip3
 
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
@@ -36,7 +41,7 @@
         instance_type: "t3.micro"
         security_group: "{{ sg_id }}"
         image_id: "{{ ami_id }}"
-        
+        key_name: "{{ key_name }}"
         region: "{{ region }}"
       loop: "{{ instances }}"
       register: ec2_instances
@@ -69,4 +74,98 @@
         overwrite: true
       loop: "{{ ec2_instances.results }}"
       when: item.item == "frontend"
+
+- name: Configure MySQL on mysql instance
+  hosts: mysql
+  become: true
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install MySQL server
+      ansible.builtin.apt:
+        name: mysql-server
+        state: present
+
+    - name: Ensure MySQL service is running
+      ansible.builtin.service:
+        name: mysql
+        state: started
+        enabled: true
+
+
+
+# RHEL-(9) playbook---------------
+# ---
+# - name: Create EC2 and Route53 records
+#   hosts: local
+#   connection: local
+#   become: false
+#   collections:
+#     - amazon.aws
+
+#   vars:
+#     subnet_id: "subnet-0180bc868530ad0b1"
+#     sg_id: "sg-02a5e0c53ec4cd644"
+#     ami_id: "ami-0030e4319cbf4dbf2"
+#     region: "us-east-1"
+#     zone: "jioairlines.online"
+#     key_name: "ansible"
+#     instances:
+#     - mysql
+#     - backend
+#     - frontend
+     
+
+#        # keep subnet_id, sg_id, ami_id, zone, etc. here
+
+#   tasks:
+#     - name: Install boto3 and botocore
+#       ansible.builtin.pip:
+#         name:
+#           - boto3
+#           - botocore
+#         executable: pip3.9
+
+#     - name: Launch EC2 instances
+#       amazon.aws.ec2_instance:
+#         name: "{{ item }}"
+#         vpc_subnet_id: "{{ subnet_id }}"
+#         instance_type: "t3.micro"
+#         security_group: "{{ sg_id }}"
+#         image_id: "{{ ami_id }}"
+        
+#         region: "{{ region }}"
+#       loop: "{{ instances }}"
+#       register: ec2_instances
+
+#     - name: Print EC2 output
+#       ansible.builtin.debug:
+#         msg: "{{ ec2_instances }}"
+
+#     - name: Create private Route53 records
+#       amazon.aws.route53:
+#         state: present
+#         zone: "{{ zone }}"
+#         record: "{{ item.item }}.{{ zone }}"
+#         type: A
+#         ttl: 60
+#         value: "{{ item.instances[0].private_ip_address }}"
+#         wait: true
+#         overwrite: true
+#       loop: "{{ ec2_instances.results }}"
+
+#     - name: Create public Route53 record for frontend
+#       amazon.aws.route53:
+#         state: present
+#         zone: "{{ zone }}"
+#         record: "{{ zone }}"
+#         type: A
+#         ttl: 60
+#         value: "{{ item.instances[0].public_ip_address }}"
+#         wait: true
+#         overwrite: true
+#       loop: "{{ ec2_instances.results }}"
+#       when: item.item == "frontend"
 
