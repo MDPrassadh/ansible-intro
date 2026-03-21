@@ -4,7 +4,7 @@
   connection: local
   become: false
   collections:
-    - amazon.aws
+    - amazon.aws   # or switch to community.aws if you prefer
 
   vars:
     subnet_id: "subnet-0180bc868530ad0b1"
@@ -20,6 +20,7 @@
 
   tasks:
     - name: Ensure Python3 and pip are installed
+      become: true
       ansible.builtin.apt:
         name:
           - python3
@@ -93,6 +94,7 @@
         name: mysql
         state: started
         enabled: true
+
 
 
 
