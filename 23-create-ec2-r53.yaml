@@ -1,39 +1,41 @@
+
+
+# ubuntu 22-04 LTS  ami i have taken changes made everything according to os means ubuntu ami...
+
+
+
+
+# RHEL-(9) playbook---------------
 ---
 - name: Create EC2 and Route53 records
   hosts: local
   connection: local
   become: false
   collections:
-    - amazon.aws   # or switch to community.aws if you prefer
+    - amazon.aws
 
   vars:
     subnet_id: "subnet-0180bc868530ad0b1"
     sg_id: "sg-02a5e0c53ec4cd644"
-    ami_id: "ami-0030e4319cbf4dbf2"   # Ubuntu 22.04 AMI
+    ami_id: "ami-0030e4319cbf4dbf2"
     region: "us-east-1"
     zone: "jioairlines.online"
     key_name: "ansible"
     instances:
-      - mysql
-      - backend
-      - frontend
+    - mysql
+    - backend
+    - frontend
+     
+
+       # keep subnet_id, sg_id, ami_id, zone, etc. here
 
   tasks:
-    - name: Ensure Python3 and pip are installed
-      become: true
-      ansible.builtin.apt:
-        name:
-          - python3
-          - python3-pip
-        state: present
-        update_cache: yes
-
     - name: Install boto3 and botocore
       ansible.builtin.pip:
         name:
           - boto3
           - botocore
-        executable: pip3
+        executable: pip3.9
 
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
@@ -42,7 +44,7 @@
         instance_type: "t3.micro"
         security_group: "{{ sg_id }}"
         image_id: "{{ ami_id }}"
-        key_name: "{{ key_name }}"
+        
         region: "{{ region }}"
       loop: "{{ instances }}"
       register: ec2_instances
@@ -81,11 +83,11 @@
   become: true
   tasks:
     - name: Update apt cache
-      ansible.builtin.apt:
+      ansible.builtin.package:
         update_cache: yes
 
     - name: Install MySQL server
-      ansible.builtin.apt:
+      ansible.builtin.package:
         name: mysql-server
         state: present
 
@@ -97,40 +99,42 @@
 
 
 
-
-
-
-# RHEL-(9) playbook---------------
 # ---
 # - name: Create EC2 and Route53 records
 #   hosts: local
 #   connection: local
 #   become: false
 #   collections:
-#     - amazon.aws
+#     - amazon.aws   # or switch to community.aws if you prefer
 
 #   vars:
 #     subnet_id: "subnet-0180bc868530ad0b1"
 #     sg_id: "sg-02a5e0c53ec4cd644"
-#     ami_id: "ami-0030e4319cbf4dbf2"
+#     ami_id: "ami-0030e4319cbf4dbf2"   # Ubuntu 22.04 AMI
 #     region: "us-east-1"
 #     zone: "jioairlines.online"
 #     key_name: "ansible"
 #     instances:
-#     - mysql
-#     - backend
-#     - frontend
-     
-
-#        # keep subnet_id, sg_id, ami_id, zone, etc. here
+#       - mysql
+#       - backend
+#       - frontend
 
 #   tasks:
+#     - name: Ensure Python3 and pip are installed
+#       become: true
+#       ansible.builtin.apt:
+#         name:
+#           - python3
+#           - python3-pip
+#         state: present
+#         update_cache: yes
+
 #     - name: Install boto3 and botocore
 #       ansible.builtin.pip:
 #         name:
 #           - boto3
 #           - botocore
-#         executable: pip3.9
+#         executable: pip3
 
 #     - name: Launch EC2 instances
 #       amazon.aws.ec2_instance:
@@ -139,7 +143,7 @@
 #         instance_type: "t3.micro"
 #         security_group: "{{ sg_id }}"
 #         image_id: "{{ ami_id }}"
-        
+#         key_name: "{{ key_name }}"
 #         region: "{{ region }}"
 #       loop: "{{ instances }}"
 #       register: ec2_instances
@@ -173,3 +177,21 @@
 #       loop: "{{ ec2_instances.results }}"
 #       when: item.item == "frontend"
 
+# - name: Configure MySQL on mysql instance
+#   hosts: mysql
+#   become: true
+#   tasks:
+#     - name: Update apt cache
+#       ansible.builtin.apt:
+#         update_cache: yes
+
+#     - name: Install MySQL server
+#       ansible.builtin.apt:
+#         name: mysql-server
+#         state: present
+
+#     - name: Ensure MySQL service is running
+#       ansible.builtin.service:
+#         name: mysql
+#         state: started
+#         enabled: true
