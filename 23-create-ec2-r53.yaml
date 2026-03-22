@@ -17,7 +17,7 @@
   vars:
     subnet_id: "subnet-0180bc868530ad0b1"
     sg_id: "sg-02a5e0c53ec4cd644"
-    ami_id: "ami-0030e4319cbf4dbf2"
+    ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
     key_name: "ansible"
