@@ -1,11 +1,3 @@
-
-
-# ubuntu 22-04 LTS  ami i have taken changes made everything according to os means ubuntu ami...
-
-
-
-
-# RHEL-(9) playbook---------------
 ---
 - name: Create EC2 and Route53 records
   hosts: local
