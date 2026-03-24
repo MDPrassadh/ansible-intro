@@ -24,7 +24,7 @@
     ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
-    key_name: "ansible"
+    key_name: "nv-ansible"
 
     instances:
       - mysql
@@ -38,7 +38,12 @@
         name:
           - boto3
           - botocore
-        executable: pip3.9
+        executable: pip3   # use pip3, not pip3.9
+
+    - name: Debug SG/Subnet mapping
+      ansible.builtin.debug:
+        msg: "Launching {{ item }} in subnet={{ subnet_frontend if item == 'frontend' else (subnet_backend if item == 'backend' else (subnet_mysql if item == 'mysql' else subnet_bastion)) }} with sg={{ sg_frontend if item == 'frontend' else (sg_backend if item == 'backend' else (sg_mysql if item == 'mysql' else sg_bastion)) }}"
+      loop: "{{ instances }}"
 
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
@@ -52,11 +57,11 @@
              else (subnet_backend if item == 'backend'
              else (subnet_mysql if item == 'mysql'
              else subnet_bastion)) }}
-        security_group: >-
-          {{ sg_frontend if item == 'frontend'
-             else (sg_backend if item == 'backend'
-             else (sg_mysql if item == 'mysql'
-             else sg_bastion)) }}
+        security_groups: >-
+          {{ [sg_frontend] if item == 'frontend'
+             else ([sg_backend] if item == 'backend'
+             else ([sg_mysql] if item == 'mysql'
+             else [sg_bastion])) }}
       loop: "{{ instances }}"
       register: ec2_instances
 
@@ -118,6 +123,7 @@
         name: mysqld
         state: started
         enabled: true
+
 
 
 
