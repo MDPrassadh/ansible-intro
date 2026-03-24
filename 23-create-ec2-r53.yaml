@@ -7,19 +7,31 @@
     - amazon.aws
 
   vars:
-    subnet_id: "subnet-0180bc868530ad0b1"
-    sg_id: "sg-02a5e0c53ec4cd644"
+    
+    vpc_id: "vpc-05170b8abe4d7792b"
+
+    # Subnets
+    subnet_frontend: "subnet-0fff9fc599d24bc7c"   # public subnet for frontend
+    subnet_backend: "subnet-06d34df27c64605ce"    # private subnet for backend
+    subnet_mysql: "subnet-0abc123456789def0"      # private subnet for mysql
+    subnet_bastion: "subnet-0fff9fc599d24bc7c"    # public subnet for bastion (if you use one)
+
+    # Security Groups
+    sg_frontend: "sg-0434875cae6b609aa"
+    sg_backend: "sg-076f74fdfe5212b57"
+    sg_mysql: "sg-01fd2949b734db2ef"
+    sg_bastion: "sg-037622c94cb515d37"
+
     ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
     key_name: "ansible"
+
     instances:
     - mysql
     - backend
     - frontend
-     
 
-       # keep subnet_id, sg_id, ami_id, zone, etc. here
 
   tasks:
     - name: Install boto3 and botocore
@@ -32,14 +44,18 @@
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
         name: "{{ item }}"
-        vpc_subnet_id: "{{ subnet_id }}"
         instance_type: "t3.micro"
-        security_group: "{{ sg_id }}"
         image_id: "{{ ami_id }}"
-        
         region: "{{ region }}"
+        key_name: "{{ key_name }}"
+        vpc_subnet_id: "{{ subnet_public_id if item == 'frontend' else subnet_private_id }}"
+        security_group: >-
+          {{ sg_frontend if item == 'frontend'
+            else (sg_backend if item == 'backend'
+            else sg_mysql) }}
       loop: "{{ instances }}"
       register: ec2_instances
+
 
     - name: Print EC2 output
       ansible.builtin.debug:
