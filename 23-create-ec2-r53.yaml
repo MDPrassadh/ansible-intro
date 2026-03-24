@@ -7,14 +7,13 @@
     - amazon.aws
 
   vars:
-    
     vpc_id: "vpc-05170b8abe4d7792b"
 
     # Subnets
     subnet_frontend: "subnet-0fff9fc599d24bc7c"   # public subnet for frontend
     subnet_backend: "subnet-06d34df27c64605ce"    # private subnet for backend
     subnet_mysql: "subnet-0abc123456789def0"      # private subnet for mysql
-    subnet_bastion: "subnet-0fff9fc599d24bc7c"    # public subnet for bastion (if you use one)
+    subnet_bastion: "subnet-0fff9fc599d24bc7c"    # public subnet for bastion
 
     # Security Groups
     sg_frontend: "sg-0434875cae6b609aa"
@@ -28,10 +27,10 @@
     key_name: "ansible"
 
     instances:
-    - mysql
-    - backend
-    - frontend
-
+      - mysql
+      - backend
+      - frontend
+      - bastion
 
   tasks:
     - name: Install boto3 and botocore
@@ -48,20 +47,24 @@
         image_id: "{{ ami_id }}"
         region: "{{ region }}"
         key_name: "{{ key_name }}"
-        vpc_subnet_id: "{{ subnet_public_id if item == 'frontend' else subnet_private_id }}"
+        vpc_subnet_id: >-
+          {{ subnet_frontend if item == 'frontend'
+             else (subnet_backend if item == 'backend'
+             else (subnet_mysql if item == 'mysql'
+             else subnet_bastion)) }}
         security_group: >-
           {{ sg_frontend if item == 'frontend'
-            else (sg_backend if item == 'backend'
-            else sg_mysql) }}
+             else (sg_backend if item == 'backend'
+             else (sg_mysql if item == 'mysql'
+             else sg_bastion)) }}
       loop: "{{ instances }}"
       register: ec2_instances
-
 
     - name: Print EC2 output
       ansible.builtin.debug:
         msg: "{{ ec2_instances }}"
 
-    - name: Create private Route53 records
+    - name: Create private Route53 records (mysql, backend)
       amazon.aws.route53:
         state: present
         zone: "{{ zone }}"
@@ -72,12 +75,13 @@
         wait: true
         overwrite: true
       loop: "{{ ec2_instances.results }}"
+      when: item.item in ['mysql','backend']
 
     - name: Create public Route53 record for frontend
       amazon.aws.route53:
         state: present
         zone: "{{ zone }}"
-        record: "{{ zone }}"
+        record: "frontend.{{ zone }}"
         type: A
         ttl: 60
         value: "{{ item.instances[0].public_ip_address }}"
@@ -86,14 +90,24 @@
       loop: "{{ ec2_instances.results }}"
       when: item.item == "frontend"
 
+    - name: Create public Route53 record for bastion
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "bastion.{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ item.instances[0].public_ip_address }}"
+        wait: true
+        overwrite: true
+      loop: "{{ ec2_instances.results }}"
+      when: item.item == "bastion"
+
+# Example service configuration playbook
 - name: Configure MySQL on mysql instance
   hosts: mysql
   become: true
   tasks:
-    - name: Update apt cache
-      ansible.builtin.package:
-        update_cache: yes
-
     - name: Install MySQL server
       ansible.builtin.package:
         name: mysql-server
@@ -101,7 +115,7 @@
 
     - name: Ensure MySQL service is running
       ansible.builtin.service:
-        name: mysql
+        name: mysqld
         state: started
         enabled: true
 
