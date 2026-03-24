@@ -12,7 +12,7 @@
     # Subnets
     subnet_frontend: "subnet-0fff9fc599d24bc7c"
     subnet_backend: "subnet-06d34df27c64605ce"
-    subnet_mysql: "subnet-0abc123456789def0"
+    subnet_mysql: "subnet-08bb5b99a75588b1c"
     subnet_bastion: "subnet-0fff9fc599d24bc7c"
 
     # Security Groups (IDs)
