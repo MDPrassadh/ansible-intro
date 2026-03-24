@@ -15,7 +15,7 @@
     subnet_mysql: "subnet-0abc123456789def0"      # private subnet for mysql
     subnet_bastion: "subnet-0fff9fc599d24bc7c"    # public subnet for bastion
 
-    # Security Groups
+    # Security Groups (IDs)
     sg_frontend: "sg-0434875cae6b609aa"
     sg_backend: "sg-076f74fdfe5212b57"
     sg_mysql: "sg-01fd2949b734db2ef"
@@ -57,7 +57,7 @@
              else (subnet_backend if item == 'backend'
              else (subnet_mysql if item == 'mysql'
              else subnet_bastion)) }}
-        security_groups: >-
+        security_group_ids: >-
           {{ [sg_frontend] if item == 'frontend'
              else ([sg_backend] if item == 'backend'
              else ([sg_mysql] if item == 'mysql'
@@ -123,6 +123,7 @@
         name: mysqld
         state: started
         enabled: true
+
 
 
 
