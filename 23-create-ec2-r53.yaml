@@ -12,7 +12,7 @@
     ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
-    key_name: "ansible"
+    key_name: "ansible.pem"
     instances:
     - mysql
     - backend
