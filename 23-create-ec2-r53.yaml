@@ -10,10 +10,10 @@
     vpc_id: "vpc-05170b8abe4d7792b"
 
     # Subnets
-    subnet_frontend: "subnet-0fff9fc599d24bc7c"   # public subnet for frontend
-    subnet_backend: "subnet-06d34df27c64605ce"    # private subnet for backend
-    subnet_mysql: "subnet-0abc123456789def0"      # private subnet for mysql
-    subnet_bastion: "subnet-0fff9fc599d24bc7c"    # public subnet for bastion
+    subnet_frontend: "subnet-0fff9fc599d24bc7c"
+    subnet_backend: "subnet-06d34df27c64605ce"
+    subnet_mysql: "subnet-0abc123456789def0"
+    subnet_bastion: "subnet-0fff9fc599d24bc7c"
 
     # Security Groups (IDs)
     sg_frontend: "sg-0434875cae6b609aa"
@@ -24,7 +24,7 @@
     ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
-    key_name: "nv-ansible"
+    key_name: "nv-ansible"   # updated key pair name
 
     instances:
       - mysql
@@ -38,7 +38,7 @@
         name:
           - boto3
           - botocore
-        executable: pip3   # use pip3, not pip3.9
+        executable: pip3
 
     - name: Debug SG/Subnet mapping
       ansible.builtin.debug:
@@ -57,7 +57,7 @@
              else (subnet_backend if item == 'backend'
              else (subnet_mysql if item == 'mysql'
              else subnet_bastion)) }}
-        security_group_ids: >-
+        security_groups: >-
           {{ [sg_frontend] if item == 'frontend'
              else ([sg_backend] if item == 'backend'
              else ([sg_mysql] if item == 'mysql'
@@ -108,7 +108,7 @@
       loop: "{{ ec2_instances.results }}"
       when: item.item == "bastion"
 
-# Example service configuration playbook
+# Configure MySQL
 - name: Configure MySQL on mysql instance
   hosts: mysql
   become: true
@@ -121,6 +121,46 @@
     - name: Ensure MySQL service is running
       ansible.builtin.service:
         name: mysqld
+        state: started
+        enabled: true
+
+# Configure Backend (Node.js)
+- name: Configure Backend on backend instance
+  hosts: backend
+  become: true
+  tasks:
+    - name: Install Node.js and npm
+      ansible.builtin.package:
+        name: nodejs
+        state: present
+    - name: Install npm
+      ansible.builtin.package:
+        name: npm
+        state: present
+    - name: Deploy backend app
+      ansible.builtin.copy:
+        src: ./backend-app/
+        dest: /opt/backend/
+    - name: Start backend app
+      ansible.builtin.shell: |
+        cd /opt/backend && npm install && nohup node app.js &
+
+# Configure Frontend (Nginx)
+- name: Configure Frontend on frontend instance
+  hosts: frontend
+  become: true
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.package:
+        name: nginx
+        state: present
+    - name: Deploy frontend files
+      ansible.builtin.copy:
+        src: ./frontend-app/
+        dest: /usr/share/nginx/html/
+    - name: Ensure Nginx is running
+      ansible.builtin.service:
+        name: nginx
         state: started
         enabled: true
 
