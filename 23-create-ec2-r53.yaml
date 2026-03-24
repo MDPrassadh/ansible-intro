@@ -38,7 +38,7 @@
         name:
           - boto3
           - botocore
-        executable: pip3
+        executable: pip3.9
 
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
