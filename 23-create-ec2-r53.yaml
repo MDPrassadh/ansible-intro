@@ -108,6 +108,16 @@
       loop: "{{ ec2_instances.results }}"
       when: item.item == "bastion"
 
+    - name: Create root record (direct access)
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone }}"
+        record: "{{ zone }}"
+        type: A
+        ttl: 60
+        value: "{{ ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first | first | attr('public_ip_address') }}"
+      overwrite: true
+
 # Configure MySQL
 - name: Configure MySQL on mysql instance
   hosts: mysql
