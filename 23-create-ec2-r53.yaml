@@ -42,10 +42,10 @@
 
     - name: Set facts for IPs
       ansible.builtin.set_fact:
-        frontend_public_ip: "{{ ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first | first.public_ip_address }}"
-        backend_private_ip: "{{ ec2_instances.results | selectattr('item','equalto','backend') | map(attribute='instances') | first | first.private_ip_address }}"
-        mysql_private_ip: "{{ ec2_instances.results | selectattr('item','equalto','mysql') | map(attribute='instances') | first | first.private_ip_address }}"
-        bastion_public_ip: "{{ ec2_instances.results | selectattr('item','equalto','bastion') | map(attribute='instances') | first | first.public_ip_address }}"
+        frontend_public_ip: "{{ (ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first)[0].public_ip_address }}"
+        backend_private_ip: "{{ (ec2_instances.results | selectattr('item','equalto','backend') | map(attribute='instances') | first)[0].private_ip_address }}"
+        mysql_private_ip: "{{ (ec2_instances.results | selectattr('item','equalto','mysql') | map(attribute='instances') | first)[0].private_ip_address }}"
+        bastion_public_ip: "{{ (ec2_instances.results | selectattr('item','equalto','bastion') | map(attribute='instances') | first)[0].public_ip_address }}"
 
     - name: Create Route53 records
       amazon.aws.route53:
