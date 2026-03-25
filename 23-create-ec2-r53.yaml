@@ -1,21 +1,16 @@
----
 - name: Create EC2 and Route53 records
   hosts: local
   connection: local
-  become: false
   collections:
     - amazon.aws
 
   vars:
     vpc_id: "vpc-05170b8abe4d7792b"
-
-    # Subnets
     subnet_frontend: "subnet-0fff9fc599d24bc7c"
     subnet_backend: "subnet-06d34df27c64605ce"
     subnet_mysql: "subnet-08bb5b99a75588b1c"
     subnet_bastion: "subnet-0fff9fc599d24bc7c"
 
-    # Security Groups (IDs)
     sg_frontend: "sg-0434875cae6b609aa"
     sg_backend: "sg-076f74fdfe5212b57"
     sg_mysql: "sg-01fd2949b734db2ef"
@@ -24,7 +19,7 @@
     ami_id: "ami-09e973f123c32cf86"
     region: "us-east-1"
     zone: "jioairlines.online"
-    key_name: "nv-ansible"   # updated key pair name
+    key_name: "nv-ansible"
 
     instances:
       - mysql
@@ -33,18 +28,6 @@
       - bastion
 
   tasks:
-    - name: Install boto3 and botocore
-      ansible.builtin.pip:
-        name:
-          - boto3
-          - botocore
-        executable: pip3
-
-    - name: Debug SG/Subnet mapping
-      ansible.builtin.debug:
-        msg: "Launching {{ item }} in subnet={{ subnet_frontend if item == 'frontend' else (subnet_backend if item == 'backend' else (subnet_mysql if item == 'mysql' else subnet_bastion)) }} with sg={{ sg_frontend if item == 'frontend' else (sg_backend if item == 'backend' else (sg_mysql if item == 'mysql' else sg_bastion)) }}"
-      loop: "{{ instances }}"
-
     - name: Launch EC2 instances
       amazon.aws.ec2_instance:
         name: "{{ item }}"
@@ -52,128 +35,33 @@
         image_id: "{{ ami_id }}"
         region: "{{ region }}"
         key_name: "{{ key_name }}"
-        vpc_subnet_id: >-
-          {{ subnet_frontend if item == 'frontend'
-             else (subnet_backend if item == 'backend'
-             else (subnet_mysql if item == 'mysql'
-             else subnet_bastion)) }}
-        security_groups: >-
-          {{ [sg_frontend] if item == 'frontend'
-             else ([sg_backend] if item == 'backend'
-             else ([sg_mysql] if item == 'mysql'
-             else [sg_bastion])) }}
+        vpc_subnet_id: "{{ subnet_frontend if item == 'frontend' else (subnet_backend if item == 'backend' else (subnet_mysql if item == 'mysql' else subnet_bastion)) }}"
+        security_groups: "{{ [sg_frontend] if item == 'frontend' else ([sg_backend] if item == 'backend' else ([sg_mysql] if item == 'mysql' else [sg_bastion])) }}"
       loop: "{{ instances }}"
       register: ec2_instances
 
-    - name: Print EC2 output
-      ansible.builtin.debug:
-        msg: "{{ ec2_instances }}"
+    - name: Set facts for IPs
+      ansible.builtin.set_fact:
+        frontend_public_ip: "{{ ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first | first.public_ip_address }}"
+        backend_private_ip: "{{ ec2_instances.results | selectattr('item','equalto','backend') | map(attribute='instances') | first | first.private_ip_address }}"
+        mysql_private_ip: "{{ ec2_instances.results | selectattr('item','equalto','mysql') | map(attribute='instances') | first | first.private_ip_address }}"
+        bastion_public_ip: "{{ ec2_instances.results | selectattr('item','equalto','bastion') | map(attribute='instances') | first | first.public_ip_address }}"
 
-    - name: Create private Route53 records (mysql, backend)
+    - name: Create Route53 records
       amazon.aws.route53:
         state: present
         zone: "{{ zone }}"
-        record: "{{ item.item }}.{{ zone }}"
+        record: "{{ item.name }}"
         type: A
         ttl: 60
-        value: "{{ item.instances[0].private_ip_address }}"
-        wait: true
+        value: "{{ item.value }}"
         overwrite: true
-      loop: "{{ ec2_instances.results }}"
-      when: item.item in ['mysql','backend']
-
-    - name: Create public Route53 record for frontend
-      amazon.aws.route53:
-        state: present
-        zone: "{{ zone }}"
-        record: "frontend.{{ zone }}"
-        type: A
-        ttl: 60
-        value: "{{ item.instances[0].public_ip_address }}"
-        wait: true
-        overwrite: true
-      loop: "{{ ec2_instances.results }}"
-      when: item.item == "frontend"
-
-    - name: Create public Route53 record for bastion
-      amazon.aws.route53:
-        state: present
-        zone: "{{ zone }}"
-        record: "bastion.{{ zone }}"
-        type: A
-        ttl: 60
-        value: "{{ item.instances[0].public_ip_address }}"
-        wait: true
-        overwrite: true
-      loop: "{{ ec2_instances.results }}"
-      when: item.item == "bastion"
-
-    - name: Create root record (direct access)
-      amazon.aws.route53:
-        state: present
-        zone: "{{ zone }}"
-        record: "{{ zone }}"
-        type: A
-        ttl: 60
-        value: "{{ ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first | first | attr('public_ip_address') }}"
-        overwrite: true
-
-# Configure MySQL
-- name: Configure MySQL on mysql instance
-  hosts: mysql
-  become: true
-  tasks:
-    - name: Install MySQL server
-      ansible.builtin.package:
-        name: mysql-server
-        state: present
-
-    - name: Ensure MySQL service is running
-      ansible.builtin.service:
-        name: mysqld
-        state: started
-        enabled: true
-
-# Configure Backend (Node.js)
-- name: Configure Backend on backend instance
-  hosts: backend
-  become: true
-  tasks:
-    - name: Install Node.js and npm
-      ansible.builtin.package:
-        name: nodejs
-        state: present
-    - name: Install npm
-      ansible.builtin.package:
-        name: npm
-        state: present
-    - name: Deploy backend app
-      ansible.builtin.copy:
-        src: ./backend-app/
-        dest: /opt/backend/
-    - name: Start backend app
-      ansible.builtin.shell: |
-        cd /opt/backend && npm install && nohup node app.js &
-
-# Configure Frontend (Nginx)
-- name: Configure Frontend on frontend instance
-  hosts: frontend
-  become: true
-  tasks:
-    - name: Install Nginx
-      ansible.builtin.package:
-        name: nginx
-        state: present
-    - name: Deploy frontend files
-      ansible.builtin.copy:
-        src: ./frontend-app/
-        dest: /usr/share/nginx/html/
-    - name: Ensure Nginx is running
-      ansible.builtin.service:
-        name: nginx
-        state: started
-        enabled: true
-
+      loop:
+        - { name: "{{ zone }}", value: "{{ frontend_public_ip }}" }                # root record
+        - { name: "frontend.{{ zone }}", value: "{{ frontend_public_ip }}" }
+        - { name: "backend.{{ zone }}", value: "{{ backend_private_ip }}" }
+        - { name: "mysql.{{ zone }}", value: "{{ mysql_private_ip }}" }
+        - { name: "bastion.{{ zone }}", value: "{{ bastion_public_ip }}" }
 
 
 
