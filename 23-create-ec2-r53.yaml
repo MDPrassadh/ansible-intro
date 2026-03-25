@@ -116,7 +116,7 @@
         type: A
         ttl: 60
         value: "{{ ec2_instances.results | selectattr('item','equalto','frontend') | map(attribute='instances') | first | first | attr('public_ip_address') }}"
-      overwrite: true
+        overwrite: true
 
 # Configure MySQL
 - name: Configure MySQL on mysql instance
