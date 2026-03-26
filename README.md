@@ -8,6 +8,9 @@
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/4953b217-0729-4dbb-9efb-89de297403c5" />
 
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c4359c69-3cb0-430c-a060-76053a0b2772" />
+
+
 I’ve checked your playbook carefully, Durga — it’s now in good shape. You’ve got:
 
 VPC with CIDR 10.0.0.0/16
