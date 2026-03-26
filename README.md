@@ -7,10 +7,6 @@
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ed906226-e9eb-4961-8174-0a1c7f75ac06" />
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/4953b217-0729-4dbb-9efb-89de297403c5" />
-
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c4359c69-3cb0-430c-a060-76053a0b2772" />
-
-
 I’ve checked your playbook carefully, Durga — it’s now in good shape. You’ve got:
 
 VPC with CIDR 10.0.0.0/16
@@ -36,6 +32,24 @@ That’s exactly the 3‑tier architecture pattern AWS recommends.
 Here’s a visual diagram of your setup for easy understanding:
 
 https://copilot.microsoft.com/th/id/BCO.c23e8c85-97ae-42a0-a3a3-a4ad1dd5ec89.png
+
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c4359c69-3cb0-430c-a060-76053a0b2772" />
+What this diagram shows
+Layer	AZ 1a (ap-south-1a)	AZ 1b (ap-south-1b)
+Public	Bastion Host, Frontend, Ansible Server	Frontend JumpServer
+Private	Backend Server	Backend Server
+Database	MySQL DB	MySQL DB
+Routing	IGW → Public, NAT GW → Private	IGW → Public, NAT GW → Private
+
+IGW connects public subnets to the internet
+
+NAT Gateway (with EIP) allows private subnets to reach out securely
+
+Route Tables are split per tier and AZ
+
+Security Groups restrict access: Bastion via your IP, Frontend open for HTTP/HTTPS, Backend and DB isolated
+
 
 📝 Notes (RCA style)
 Why these steps matter:
