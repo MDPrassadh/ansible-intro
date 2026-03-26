@@ -2,9 +2,77 @@
 
 
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/eed27cf7-3846-47d1-90ab-66a5eeb7adf5" />
+
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ed906226-e9eb-4961-8174-0a1c7f75ac06" />
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/4953b217-0729-4dbb-9efb-89de297403c5" />
+
+I’ve checked your playbook carefully, Durga — it’s now in good shape. You’ve got:
+
+VPC with CIDR 10.0.0.0/16
+
+Subnets across AZs ap-south-1a and ap-south-1b (public, private, database)
+
+IGW for public subnets
+
+Elastic IP + NAT Gateway for private subnets
+
+Route tables correctly split:
+
+Public → IGW
+
+Private → NAT GW
+
+Database → Local only
+
+Security groups for Bastion, Frontend, Backend, Database with proper rules
+
+That’s exactly the 3‑tier architecture pattern AWS recommends.
+
+Here’s a visual diagram of your setup for easy understanding:
+
+https://copilot.microsoft.com/th/id/BCO.c23e8c85-97ae-42a0-a3a3-a4ad1dd5ec89.png
+
+📝 Notes (RCA style)
+Why these steps matter:
+
+IGW → Public Subnets: Bastion + Frontend need direct internet access.
+
+NAT GW → Private Subnets: Backend servers can reach out (e.g., for updates) but are not exposed.
+
+Local only → DB Subnets: Databases stay isolated, only reachable from backend SG.
+
+SG rules: Bastion restricted to your IP, frontend open for HTTP/HTTPS, backend only reachable from frontend/bastion, DB only reachable from backend/bastion.
+
+Root Cause of earlier issues:
+
+Missing Elastic IP for NAT → NAT GW couldn’t provide outbound internet.
+
+Wrong module for routes → routes weren’t applied.
+
+Placeholder IP in Bastion SG → AWS rejected ingress rule.
+
+Fixes applied:
+
+Added ec2_eip before NAT GW.
+
+Used ec2_vpc_route for IGW/NAT routes.
+
+Parameterized my_ip for Bastion SG.
+
+Explicitly associated subnets with route tables.
+
+Prevention:
+
+Always define route tables explicitly.
+
+Always allocate EIP before NAT GW.
+
+Always replace placeholder IP with your real IPv4 /32.
+
+Document run order: VPC → Instances → Teardown Instances → Teardown VPC
+
 
 Diagram Explanation-----
 📘 Explanation
