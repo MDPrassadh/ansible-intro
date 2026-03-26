@@ -1,5 +1,5 @@
 - name: Launch EC2 Instances and Configure Route53
-  hosts: localhost
+  hosts: local
   connection: local
   collections:
     - amazon.aws
