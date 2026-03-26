@@ -104,28 +104,23 @@
       register: natgw
     
         # Public Route Table
-        # Public Route Table
     - name: Create Public Route Table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         region: "{{ region }}"
         state: present
         tags: { Name: "prassadh-public-rt" }
+        routes:
+          - dest: "0.0.0.0/0"
+            gateway_id: "{{ igw.gateway_id }}"
       register: public_rt
-
-    - name: Add route to IGW in Public RT
-      amazon.aws.ec2_vpc_route:
-        route_table_id: "{{ public_rt.route_table.id }}"
-        region: "{{ region }}"
-        dest: "0.0.0.0/0"
-        gateway_id: "{{ igw.gateway_id }}"
-        state: present
 
     - name: Associate Public Subnet 1a
       amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_public_1a.subnet.id }}"
         route_table_id: "{{ public_rt.route_table.id }}"
         region: "{{ region }}"
+
     - name: Associate Public Subnet 1b
       amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_public_1b.subnet.id }}"
@@ -139,21 +134,17 @@
         region: "{{ region }}"
         state: present
         tags: { Name: "prassadh-private-rt" }
+        routes:
+          - dest: "0.0.0.0/0"
+            nat_gateway_id: "{{ natgw.nat_gateway.id }}"
       register: private_rt
-
-    - name: Add route to NAT GW in Private RT
-      amazon.aws.ec2_vpc_route:
-        route_table_id: "{{ private_rt.route_table.id }}"
-        region: "{{ region }}"
-        dest: "0.0.0.0/0"
-        nat_gateway_id: "{{ natgw.nat_gateway.id }}"
-        state: present
 
     - name: Associate Private Subnet 1a
       amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_private_1a.subnet.id }}"
         route_table_id: "{{ private_rt.route_table.id }}"
         region: "{{ region }}"
+
     - name: Associate Private Subnet 1b
       amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_private_1b.subnet.id }}"
@@ -174,12 +165,12 @@
         subnet_id: "{{ subnet_db_1a.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
+
     - name: Associate Database Subnet 1b
       amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_db_1b.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
-
 
     # Security Groups
     - name: Bastion SG
@@ -243,6 +234,84 @@
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
+
+    
+    #     # Public Route Table
+    #     # Public Route Table
+    # - name: Create Public Route Table
+    #   amazon.aws.ec2_vpc_route_table:
+    #     vpc_id: "{{ vpc.vpc.id }}"
+    #     region: "{{ region }}"
+    #     state: present
+    #     tags: { Name: "prassadh-public-rt" }
+    #   register: public_rt
+
+    # - name: Add route to IGW in Public RT
+    #   amazon.aws.ec2_vpc_route:
+    #     route_table_id: "{{ public_rt.route_table.id }}"
+    #     region: "{{ region }}"
+    #     dest: "0.0.0.0/0"
+    #     gateway_id: "{{ igw.gateway_id }}"
+    #     state: present
+
+    # - name: Associate Public Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_public_1a.subnet.id }}"
+    #     route_table_id: "{{ public_rt.route_table.id }}"
+    #     region: "{{ region }}"
+    # - name: Associate Public Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_public_1b.subnet.id }}"
+    #     route_table_id: "{{ public_rt.route_table.id }}"
+    #     region: "{{ region }}"
+
+    # # Private Route Table
+    # - name: Create Private Route Table
+    #   amazon.aws.ec2_vpc_route_table:
+    #     vpc_id: "{{ vpc.vpc.id }}"
+    #     region: "{{ region }}"
+    #     state: present
+    #     tags: { Name: "prassadh-private-rt" }
+    #   register: private_rt
+
+    # - name: Add route to NAT GW in Private RT
+    #   amazon.aws.ec2_vpc_route:
+    #     route_table_id: "{{ private_rt.route_table.id }}"
+    #     region: "{{ region }}"
+    #     dest: "0.0.0.0/0"
+    #     nat_gateway_id: "{{ natgw.nat_gateway.id }}"
+    #     state: present
+
+    # - name: Associate Private Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_private_1a.subnet.id }}"
+    #     route_table_id: "{{ private_rt.route_table.id }}"
+    #     region: "{{ region }}"
+    # - name: Associate Private Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_private_1b.subnet.id }}"
+    #     route_table_id: "{{ private_rt.route_table.id }}"
+    #     region: "{{ region }}"
+
+    # # Database Route Table (local only)
+    # - name: Create Database Route Table
+    #   amazon.aws.ec2_vpc_route_table:
+    #     vpc_id: "{{ vpc.vpc.id }}"
+    #     region: "{{ region }}"
+    #     state: present
+    #     tags: { Name: "prassadh-db-rt" }
+    #   register: db_rt
+
+    # - name: Associate Database Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_db_1a.subnet.id }}"
+    #     route_table_id: "{{ db_rt.route_table.id }}"
+    #     region: "{{ region }}"
+    # - name: Associate Database Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
+    #     subnet_id: "{{ subnet_db_1b.subnet.id }}"
+    #     route_table_id: "{{ db_rt.route_table.id }}"
+    #     region: "{{ region }}"
 
 
 
