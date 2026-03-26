@@ -27,6 +27,7 @@
         cidr: "10.0.1.0/24"
         az: "ap-south-1a"
         map_public: true
+        region: "{{ region }}"
         tags: { Name: "prassadh-public-subnet-1a" }
       register: subnet_public_1a
 
@@ -35,6 +36,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.11.0/24"
         az: "ap-south-1a"
+        region: "{{ region }}"
         tags: { Name: "prassadh-private-subnet-1a" }
       register: subnet_private_1a
 
@@ -43,6 +45,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.21.0/24"
         az: "ap-south-1a"
+        region: "{{ region }}"
         tags: { Name: "prassadh-database-subnet-1a" }
       register: subnet_db_1a
 
@@ -52,6 +55,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.2.0/24"
         az: "ap-south-1b"
+        region: "{{ region }}"
         map_public: true
         tags: { Name: "prassadh-public-subnet-1b" }
       register: subnet_public_1b
@@ -61,6 +65,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.12.0/24"
         az: "ap-south-1b"
+        region: "{{ region }}"
         tags: { Name: "prassadh-private-subnet-1b" }
       register: subnet_private_1b
 
@@ -69,6 +74,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.22.0/24"
         az: "ap-south-1b"
+        region: "{{ region }}"
         tags: { Name: "prassadh-database-subnet-1b" }
       register: subnet_db_1b
 
