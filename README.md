@@ -6,6 +6,17 @@
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ed906226-e9eb-4961-8174-0a1c7f75ac06" />
 
+Diagram Explanation-----
+📘 Explanation
+Public subnets (1a, 1b) → route to IGW for internet access.
+
+Private subnets (1a, 1b) → route to NAT Gateway for outbound internet (updates, patches).
+
+Database subnets (1a, 1b) → only local VPC routes, no internet.
+
+High Availability → mirrored subnets across AZs.
+
+Security Groups → Bastion (SSH only from your IP), Frontend (HTTP/HTTPS), Backend (8080 from Frontend, SSH from Bastion), Database (3306 from Backend, SSH from Bastion).
 # prassadh-vpc: Secure 3-Tier AWS Architecture with Ansible
 
 This repository contains a complete automation setup for deploying a secure, high-availability 3-tier architecture on AWS using Ansible.
