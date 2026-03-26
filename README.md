@@ -1,6 +1,62 @@
-              https://copilot.microsoft.com/th/id/BCO.c92ab4d7-28ff-4790-99b0-32664e5fdb6b.pn
+              vhttps://copilot.microsoft.com/th/id/BCO.f98ea40a-4e7b-4c4b-9a6c-b2a771c25608.png
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/a9cd4853-3ea8-433d-932d-f71d5e22e8ce" />
+
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/eed27cf7-3846-47d1-90ab-66a5eeb7adf5" />
+
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/ed906226-e9eb-4961-8174-0a1c7f75ac06" />
+
+# prassadh-vpc: Secure 3-Tier AWS Architecture with Ansible
+
+This repository contains a complete automation setup for deploying a secure, high-availability 3-tier architecture on AWS using Ansible.
+
+## 📐 Architecture Overview
+
+- **VPC Name**: `prassadh` (`10.0.0.0/16`)
+- **Availability Zones**: `ap-south-1a` and `ap-south-1b`
+- **Subnets**:
+  - Public Subnets: `10.0.1.0/24`, `10.0.2.0/24`
+  - Private Subnets: `10.0.11.0/24`, `10.0.12.0/24`
+  - Database Subnets: `10.0.21.0/24`, `10.0.22.0/24`
+- **Routing**:
+  - Public → Internet Gateway
+  - Private → NAT Gateway
+  - Database → Local routes only
+- **Security Groups**:
+  - Bastion: SSH from admin IP only
+  - Frontend: HTTP/HTTPS from all
+  - Backend: App port from frontend, SSH from bastion
+  - Database: MySQL from backend, SSH from bastion
+- **DNS**: Hosted zone `prassadhmulticloud.online` with records for each tier
+
+## 📦 Files
+
+| File | Purpose |
+|------|---------|
+| `prassadh_vpc_sgs_routing.yml` | Creates VPC, subnets, routing, and SGs |
+| `prassadh_instances_dns.yml` | Launches EC2 instances and DNS records |
+| `prassadh_teardown_vpc_sgs.yml` | Deletes VPC, subnets, SGs |
+| `prassadh_teardown_instances_dns.yml` | Terminates EC2 and deletes DNS records |
+
+## 🖼️ Architecture Diagram
+
+![Architecture](https://copilot.microsoft.com/th/id/BCO.f98ea40a-4e7b-4c4b-9a6c-b2a771c25608.png)
+
+## 🚀 How to Use
+
+1. Run `prassadh_vpc_sgs_routing.yml` to create infrastructure.
+2. Run `prassadh_instances_dns.yml` to launch instances and configure DNS.
+3. To clean up, run `prassadh_teardown_instances_dns.yml` followed by `prassadh_teardown_vpc_sgs.yml`.
+
+## 🧠 Interview Ready
+
+This setup is designed to reflect real-world production standards and is ideal for showcasing DevOps skills in interviews or portfolio reviews.
+
+---
+
+Made with ❤️ by Durga Prassadh
+
+
 
 secure 3‑tier AWS architectur: ap-south-1   region for better High availablity and fault tolerance i'm using AZ 1a and 1b in ap-south -1 
 
