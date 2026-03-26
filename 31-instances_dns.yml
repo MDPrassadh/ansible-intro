@@ -1,0 +1,49 @@
+- name: Launch EC2 Instances and Configure Route53
+  hosts: localhost
+  connection: local
+  collections:
+    - amazon.aws
+
+  vars:
+    region: "ap-south-1"
+    ami_id: "ami-0c50b6f7f7b1a7a55"
+    key_name: "nv-ansible"
+    zone_name: "prassadhmulticloud.online"
+    zone_id: "Z09340513SQFUOMF9R6PZ"
+
+    instances:
+      - { name: "bastion", subnet_id: "subnet_public_1a", sg: "prassadh-bastion", type: "t3.micro" }
+      - { name: "frontend", subnet_id: "subnet_public_1b", sg: "prassadh-frontend", type: "t3.micro" }
+      - { name: "backend", subnet_id: "subnet_private_1a", sg: "prassadh-backend", type: "t3.micro" }
+      - { name: "mysql", subnet_id: "subnet_db_1a", sg: "prassadh-database", type: "t3.micro" }
+
+  tasks:
+    - name: Launch EC2 instances
+      amazon.aws.ec2_instance:
+        name: "{{ item.name }}"
+        instance_type: "{{ item.type }}"
+        image_id: "{{ ami_id }}"
+        region: "{{ region }}"
+        key_name: "{{ key_name }}"
+        vpc_subnet_id: "{{ hostvars.local[item.subnet_id].subnet.id }}"
+        security_groups: [ "{{ item.sg }}" ]
+      loop: "{{ instances }}"
+      register: ec2_instances
+
+    - name: Create Route53 records
+      amazon.aws.route53:
+        state: present
+        zone: "{{ zone_name }}"
+        zone_id: "{{ zone_id }}"
+        record: "{{ item.name }}"
+        type: A
+        ttl: 60
+        value: "{{ item.value }}"
+        overwrite: true
+      loop:
+        - { name: "{{ zone_name }}", value: "{{ ec2_instances.results[1].instances[0].public_ip_address }}" }
+        - { name: "www.{{ zone_name }}", value: "{{ ec2_instances.results[1].instances[0].public_ip_address }}" }
+        - { name: "frontend.{{ zone_name }}", value: "{{ ec2_instances.results[1].instances[0].public_ip_address }}" }
+        - { name: "backend.{{ zone_name }}", value: "{{ ec2_instances.results[2].instances[0].private_ip_address }}" }
+        - { name: "mysql.{{ zone_name }}", value: "{{ ec2_instances.results[3].instances[0].private_ip_address }}" }
+        - { name: "bastion.{{ zone_name }}", value: "{{ ec2_instances.results[0].instances[0].public_ip_address }}" }
