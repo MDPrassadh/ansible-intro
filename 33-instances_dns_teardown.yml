@@ -1,0 +1,48 @@
+- name: Terminate EC2 Instances and Delete Route53 Records
+  hosts: localhost
+  connection: local
+  collections:
+    - amazon.aws
+
+  vars:
+    region: "ap-south-1"
+    zone_name: "prassadhmulticloud.online"
+    zone_id: "Z09340513SQFUOMF9R6PZ"
+
+    instances:
+      - bastion
+      - frontend
+      - backend
+      - mysql
+
+  tasks:
+    - name: Gather EC2 instances by name
+      amazon.aws.ec2_instance_info:
+        region: "{{ region }}"
+        filters:
+          "tag:Name": "{{ item }}"
+      loop: "{{ instances }}"
+      register: ec2_info
+
+    - name: Terminate EC2 instances
+      amazon.aws.ec2_instance:
+        region: "{{ region }}"
+        instance_ids: "{{ item.instances | map(attribute='instance_id') | list }}"
+        state: absent
+      loop: "{{ ec2_info.results }}"
+      when: item.instances | length > 0
+
+    - name: Delete Route53 records
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ zone_name }}"
+        zone_id: "{{ zone_id }}"
+        record: "{{ item }}"
+        type: A
+      loop:
+        - "{{ zone_name }}"
+        - "www.{{ zone_name }}"
+        - "frontend.{{ zone_name }}"
+        - "backend.{{ zone_name }}"
+        - "mysql.{{ zone_name }}"
+        - "bastion.{{ zone_name }}"
