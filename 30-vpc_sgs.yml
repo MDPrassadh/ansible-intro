@@ -8,6 +8,7 @@
     region: "ap-south-1"
     vpc_name: "prassadh"
     cidr_block: "10.0.0.0/16"
+    my_ip: "203.0.113.25/32"   # <-- Replace with YOUR actual public IPv4 address
 
   tasks:
     - name: Create VPC
@@ -55,8 +56,8 @@
         vpc_id: "{{ vpc.vpc.id }}"
         cidr: "10.0.2.0/24"
         az: "ap-south-1b"
-        region: "{{ region }}"
         map_public: true
+        region: "{{ region }}"
         tags: { Name: "prassadh-public-subnet-1b" }
       register: subnet_public_1b
 
@@ -86,11 +87,19 @@
         state: present
       register: igw
 
+    # Allocate Elastic IP for NAT
+    - name: Allocate Elastic IP for NAT Gateway
+      amazon.aws.ec2_eip:
+        region: "{{ region }}"
+        state: present
+      register: nat_eip
+
     # NAT Gateway (example in public-1a)
     - name: Create NAT Gateway
       amazon.aws.ec2_vpc_nat_gateway:
         subnet_id: "{{ subnet_public_1a.subnet.id }}"
         region: "{{ region }}"
+        allocation_id: "{{ nat_eip.allocation_id }}"   # <-- attach EIP here
         state: present
       register: natgw
 
@@ -104,7 +113,7 @@
         rules:
           - proto: tcp
             ports: 22
-            cidr_ip: "YOUR_PUBLIC_IP/32"
+            cidr_ip: "{{ my_ip }}"   # <-- Your IP goes here
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
@@ -156,3 +165,77 @@
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
+
+
+
+
+# 📘 Notes (RCA Style)
+# Where to update:
+
+# In the Bastion SG task, replace my_ip with your actual public IPv4 address (e.g., 49.37.212.15/32).
+
+# This ensures only your machine can SSH into the Bastion host.
+
+# Why it matters:
+
+# If you leave YOUR_PUBLIC_IP/32 → AWS rejects it as malformed.
+
+# If you use 0.0.0.0/0 → SSH is open to the world (security risk).
+
+# Using your IP /32 → restricts SSH to just you, following best practice.
+
+# Root Cause of earlier error:
+
+# Placeholder YOUR_PUBLIC_IP::/32 was invalid (looked like IPv6).
+
+# Missing region parameter in subnet tasks.
+
+# Fix:
+
+# Added region: "{{ region }}" everywhere.
+
+# Parameterized my_ip variable for Bastion SG.
+
+# Prevention:
+
+# Always define region explicitly in AWS modules.
+
+# Always replace placeholder IP with your real IPv4 /32.
+
+# Document run order: VPC → Instances → Teardown Instances → Teardown VPC.
+
+# 👉 With this corrected file, you can now safely attach your IP address in one place (vars: my_ip) and reuse it across SGs.
+
+
+# 📘 Notes (RCA style)
+# Where to update:
+
+# my_ip → replace with your actual public IPv4 /32.
+
+# allocation_id → automatically comes from the ec2_eip task, no manual update needed.
+
+# Why:
+
+# Bastion SG must restrict SSH to your IP for security.
+
+# NAT Gateway requires an Elastic IP to provide outbound internet access for private subnets.
+
+# Root Cause of earlier skips:
+
+# NAT Gateway was created without EIP → incomplete, would fail.
+
+# Bastion SG had placeholder IP → AWS rejected it as malformed.
+
+# Fix:
+
+# Added ec2_eip task before NAT Gateway.
+
+# Parameterized my_ip variable for Bastion SG.
+
+# Prevention:
+
+# Always allocate EIP before NAT Gateway creation.
+
+# Always replace placeholder IP with your real IPv4 /32.
+
+# Document run order in README: VPC → Instances → Teardown Instances → Teardown VPC.
