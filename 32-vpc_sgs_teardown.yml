@@ -1,0 +1,85 @@
+- name: Delete VPC, Subnets and Security Groups for prassadh
+  hosts: localhost
+  connection: local
+  collections:
+    - amazon.aws
+
+  vars:
+    region: "ap-south-1"
+    vpc_name: "prassadh"
+
+  tasks:
+    # Delete Security Groups
+    - name: Delete Database SG
+      amazon.aws.ec2_group:
+        name: prassadh-database
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Backend SG
+      amazon.aws.ec2_group:
+        name: prassadh-backend
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Frontend SG
+      amazon.aws.ec2_group:
+        name: prassadh-frontend
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Bastion SG
+      amazon.aws.ec2_group:
+        name: prassadh-bastion
+        region: "{{ region }}"
+        state: absent
+
+    # Delete Subnets
+    - name: Delete Database Subnet 1a
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.21.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Private Subnet 1a
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.11.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Public Subnet 1a
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.1.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Database Subnet 1b
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.22.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Private Subnet 1b
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.12.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    - name: Delete Public Subnet 1b
+      amazon.aws.ec2_vpc_subnet:
+        cidr: "10.0.2.0/24"
+        vpc_id: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
+
+    # Delete VPC
+    - name: Delete VPC
+      amazon.aws.ec2_vpc_net:
+        name: "{{ vpc_name }}"
+        region: "{{ region }}"
+        state: absent
