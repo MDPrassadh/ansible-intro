@@ -42,6 +42,7 @@
 
 
 
+
     # 3. Discover and Delete Route Tables
     - name: Get Route Tables
       amazon.aws.ec2_vpc_route_table_info:
