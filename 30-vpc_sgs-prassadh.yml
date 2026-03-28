@@ -89,11 +89,16 @@
       register: igw
 
     # Allocate Elastic IP for NAT
-    - name: Allocate Elastic IP for NAT Gateway
+    # Allocate Elastic IP for NAT Gateway (idempotent)
+    - name: Ensure Elastic IP for NAT Gateway exists
       amazon.aws.ec2_eip:
         region: "{{ region }}"
         state: present
+      # Give it a tag so we can find it later
+        tags:
+          Name: "prassadh-nat-eip"
       register: nat_eip
+
 
     # NAT Gateway (example in public-1a)
     - name: Create NAT Gateway
