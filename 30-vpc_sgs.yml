@@ -105,7 +105,7 @@
         wait: true
       register: natgw
     
-    # Public Route Table with associations
+    # Public Route Table with subnets
     - name: Create Public Route Table and associate subnets
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
@@ -115,12 +115,12 @@
         routes:
           - dest: "0.0.0.0/0"
             gateway_id: "{{ igw.gateway_id }}"
-        associations:
-          - subnet_id: "{{ subnet_public_1a.subnet.id }}"
-          - subnet_id: "{{ subnet_public_1b.subnet.id }}"
+        subnets:
+          - "{{ subnet_public_1a.subnet.id }}"
+          - "{{ subnet_public_1b.subnet.id }}"
       register: public_rt
 
-    # Private Route Table with associations
+    # Private Route Table with subnets
     - name: Create Private Route Table and associate subnets
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
@@ -130,21 +130,21 @@
         routes:
           - dest: "0.0.0.0/0"
             nat_gateway_id: "{{ natgw.nat_gateway.id }}"
-        associations:
-          - subnet_id: "{{ subnet_private_1a.subnet.id }}"
-          - subnet_id: "{{ subnet_private_1b.subnet.id }}"
+        subnets:
+          - "{{ subnet_private_1a.subnet.id }}"
+          - "{{ subnet_private_1b.subnet.id }}"
       register: private_rt
 
-    # Database Route Table with associations
+    # Database Route Table with subnets
     - name: Create Database Route Table and associate subnets
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
         region: "{{ region }}"
         state: present
         tags: { Name: "prassadh-db-rt" }
-        associations:
-          - subnet_id: "{{ subnet_db_1a.subnet.id }}"
-          - subnet_id: "{{ subnet_db_1b.subnet.id }}"
+        subnets:
+          - "{{ subnet_db_1a.subnet.id }}"
+          - "{{ subnet_db_1b.subnet.id }}"
       register: db_rt
 
     # Security Groups
@@ -209,6 +209,7 @@
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
+
 # 
 
 
