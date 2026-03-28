@@ -19,9 +19,9 @@
 
     - name: Set VPC ID fact
       set_fact:
-        vpc_id: "{{ vpc_info.vpcs[0].vpc_id }}"
+        vpc_id: "{{ vpc_info.vpcs[0].vpc_id | default('') }}"
 
-    # Delete Security Groups
+    # Delete SGs
     - name: Delete SGs
       amazon.aws.ec2_group:
         name: "{{ item }}"
@@ -33,6 +33,7 @@
         - prassadh-backend
         - prassadh-frontend
         - prassadh-bastion
+      ignore_errors: true
 
     # Delete Route Tables
     - name: Delete Route Tables
@@ -46,6 +47,7 @@
         - prassadh-db-rt
         - prassadh-private-rt
         - prassadh-public-rt
+      ignore_errors: true
 
     # Delete NAT Gateways
     - name: Get NAT Gateway info
@@ -61,7 +63,8 @@
         region: "{{ region }}"
         state: absent
         wait: true
-      loop: "{{ natgw_info.result }}"
+      loop: "{{ natgw_info.result | default([]) }}"
+      ignore_errors: true
 
     # Delete IGW
     - name: Delete Internet Gateway
@@ -69,6 +72,7 @@
         vpc_id: "{{ vpc_id }}"
         region: "{{ region }}"
         state: absent
+      ignore_errors: true
 
     # Lookup Subnets
     - name: Get Subnet info
@@ -83,7 +87,8 @@
         subnet_id: "{{ item.subnet_id }}"
         region: "{{ region }}"
         state: absent
-      loop: "{{ subnet_info.subnets }}"
+      loop: "{{ subnet_info.subnets | default([]) }}"
+      ignore_errors: true
 
     # Finally delete VPC
     - name: Delete VPC
@@ -91,3 +96,4 @@
         name: "{{ vpc_name }}"
         region: "{{ region }}"
         state: absent
+      ignore_errors: true
