@@ -11,6 +11,7 @@
     my_ip: "203.0.113.25/32"   # <-- Replace with YOUR actual public IPv4 address
 
   tasks:
+    # VPC
     - name: Create VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
@@ -99,11 +100,12 @@
       amazon.aws.ec2_vpc_nat_gateway:
         subnet_id: "{{ subnet_public_1a.subnet.id }}"
         region: "{{ region }}"
-        allocation_id: "{{ nat_eip.allocation_id }}"   # <-- attach EIP here
+        allocation_id: "{{ nat_eip.allocation_id }}"
         state: present
+        wait: true
       register: natgw
     
-        # Public Route Table
+    # Public Route Table
     - name: Create Public Route Table
       amazon.aws.ec2_vpc_route_table:
         vpc_id: "{{ vpc.vpc.id }}"
@@ -116,13 +118,13 @@
       register: public_rt
 
     - name: Associate Public Subnet 1a
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_public_1a.subnet.id }}"
         route_table_id: "{{ public_rt.route_table.id }}"
         region: "{{ region }}"
 
     - name: Associate Public Subnet 1b
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_public_1b.subnet.id }}"
         route_table_id: "{{ public_rt.route_table.id }}"
         region: "{{ region }}"
@@ -140,13 +142,13 @@
       register: private_rt
 
     - name: Associate Private Subnet 1a
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_private_1a.subnet.id }}"
         route_table_id: "{{ private_rt.route_table.id }}"
         region: "{{ region }}"
 
     - name: Associate Private Subnet 1b
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_private_1b.subnet.id }}"
         route_table_id: "{{ private_rt.route_table.id }}"
         region: "{{ region }}"
@@ -161,13 +163,13 @@
       register: db_rt
 
     - name: Associate Database Subnet 1a
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_db_1a.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
 
     - name: Associate Database Subnet 1b
-      amazon.aws.ec2_vpc_route_table_association:
+      amazon.aws.ec2_vpc_route_table_associate:
         subnet_id: "{{ subnet_db_1b.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
@@ -182,7 +184,7 @@
         rules:
           - proto: tcp
             ports: 22
-            cidr_ip: "{{ my_ip }}"   # <-- Your IP goes here
+            cidr_ip: "{{ my_ip }}"
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
