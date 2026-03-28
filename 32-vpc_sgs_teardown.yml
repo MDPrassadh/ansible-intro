@@ -37,8 +37,9 @@
       amazon.aws.ec2_eip:
         region: "{{ region }}"
         state: absent
-        allocation_id: "{{ eip_info.addresses[0].allocation_id }}"
+        public_ip: "{{ eip_info.addresses[0].public_ip }}"
       when: eip_info.addresses is defined and eip_info.addresses|length > 0
+
 
 
     # 3. Discover and Delete Route Tables
