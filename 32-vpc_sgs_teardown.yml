@@ -21,7 +21,7 @@
       set_fact:
         vpc_id: "{{ vpc_info.vpcs[0].vpc_id | default('') }}"
 
-    # Delete Security Groups
+    # Delete SGs
     - name: Delete SGs
       amazon.aws.ec2_group:
         name: "{{ item }}"
@@ -85,7 +85,6 @@
     - name: Delete Subnets
       amazon.aws.ec2_vpc_subnet:
         subnet_id: "{{ item.subnet_id }}"
-        vpc_id: "{{ item.vpc_id }}"
         region: "{{ region }}"
         state: absent
       loop: "{{ subnet_info.subnets | default([]) }}"
