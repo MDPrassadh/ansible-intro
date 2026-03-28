@@ -95,7 +95,7 @@
         vpc_id: "{{ vpc.vpc.id }}"
         state: absent
 
-    # 7. Delete VPC
+    # 7. Delete VPC almost deleted all resources
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
         name: "{{ vpc_name }}"
