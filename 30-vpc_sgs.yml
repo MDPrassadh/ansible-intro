@@ -117,14 +117,14 @@
             gateway_id: "{{ igw.gateway_id }}"
       register: public_rt
 
-    - name: associate Public Subnet 1a
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Public Subnet 1a
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_public_1a.subnet.id }}"
         route_table_id: "{{ public_rt.route_table.id }}"
         region: "{{ region }}"
 
-    - name: associate Public Subnet 1b
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Public Subnet 1b
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_public_1b.subnet.id }}"
         route_table_id: "{{ public_rt.route_table.id }}"
         region: "{{ region }}"
@@ -141,14 +141,14 @@
             nat_gateway_id: "{{ natgw.nat_gateway.id }}"
       register: private_rt
 
-    - name: associate Private Subnet 1a
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Private Subnet 1a
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_private_1a.subnet.id }}"
         route_table_id: "{{ private_rt.route_table.id }}"
         region: "{{ region }}"
 
-    - name: associate Private Subnet 1b
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Private Subnet 1b
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_private_1b.subnet.id }}"
         route_table_id: "{{ private_rt.route_table.id }}"
         region: "{{ region }}"
@@ -162,14 +162,14 @@
         tags: { Name: "prassadh-db-rt" }
       register: db_rt
 
-    - name: associate Database Subnet 1a
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Database Subnet 1a
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_db_1a.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
 
-    - name: associate Database Subnet 1b
-      amazon.aws.ec2_vpc_route_table_associate:
+    - name: association Database Subnet 1b
+      amazon.aws.ec2_vpc_route_table_association:
         subnet_id: "{{ subnet_db_1b.subnet.id }}"
         route_table_id: "{{ db_rt.route_table.id }}"
         region: "{{ region }}"
@@ -256,13 +256,13 @@
     #     gateway_id: "{{ igw.gateway_id }}"
     #     state: present
 
-    # - name: associate Public Subnet 1a
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Public Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_public_1a.subnet.id }}"
     #     route_table_id: "{{ public_rt.route_table.id }}"
     #     region: "{{ region }}"
-    # - name: associate Public Subnet 1b
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Public Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_public_1b.subnet.id }}"
     #     route_table_id: "{{ public_rt.route_table.id }}"
     #     region: "{{ region }}"
@@ -284,13 +284,13 @@
     #     nat_gateway_id: "{{ natgw.nat_gateway.id }}"
     #     state: present
 
-    # - name: associate Private Subnet 1a
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Private Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_private_1a.subnet.id }}"
     #     route_table_id: "{{ private_rt.route_table.id }}"
     #     region: "{{ region }}"
-    # - name: associate Private Subnet 1b
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Private Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_private_1b.subnet.id }}"
     #     route_table_id: "{{ private_rt.route_table.id }}"
     #     region: "{{ region }}"
@@ -304,13 +304,13 @@
     #     tags: { Name: "prassadh-db-rt" }
     #   register: db_rt
 
-    # - name: associate Database Subnet 1a
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Database Subnet 1a
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_db_1a.subnet.id }}"
     #     route_table_id: "{{ db_rt.route_table.id }}"
     #     region: "{{ region }}"
-    # - name: associate Database Subnet 1b
-    #   amazon.aws.ec2_vpc_route_table_associate:
+    # - name: association Database Subnet 1b
+    #   amazon.aws.ec2_vpc_route_table_association:
     #     subnet_id: "{{ subnet_db_1b.subnet.id }}"
     #     route_table_id: "{{ db_rt.route_table.id }}"
     #     region: "{{ region }}"
