@@ -6,7 +6,7 @@
 
   vars:
     region: "ap-south-1"
-    vpc_name: "prassadh"
+    vpc_name: "prassadh-ap-1-vpc"
     cidr_block: "10.0.0.0/16"
     my_ip: "203.0.113.25/32"   # <-- Replace with YOUR actual public IPv4 address
 
