@@ -93,7 +93,7 @@
     # Finally delete VPC
     - name: Delete VPC
       amazon.aws.ec2_vpc_net:
-        name: "{{ vpc_name }}"
+        name: "{{ vpc_id }}"
         region: "{{ region }}"
         state: absent
       ignore_errors: true
