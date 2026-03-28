@@ -129,7 +129,7 @@
         tags: { Name: "prassadh-private-rt" }
         routes:
           - dest: "0.0.0.0/0"
-            nat_gateway_id: "{{ natgw.nat_gateway.id }}"
+            nat_gateway_id: "{{ natgw.gateway_id }}"
         subnets:
           - "{{ subnet_private_1a.subnet.id }}"
           - "{{ subnet_private_1b.subnet.id }}"
@@ -209,6 +209,7 @@
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
+
 
 # 
 
