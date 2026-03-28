@@ -126,30 +126,26 @@
         vpc_id: "{{ vpc.vpc.id }}"
         region: "{{ region }}"
         state: present
-        tags:
-          Name: "prassadh-private-rt"
+        tags: { Name: "prassadh-private-rt" }
         routes:
           - dest: "0.0.0.0/0"
-            nat_gateway_id: "{{ natgw.nat_gateway.nat_gateway_id }}"
+            nat_gateway_id: "{{ natgw.nat_gateway_id }}"
         subnets:
           - "{{ subnet_private_1a.subnet.id }}"
           - "{{ subnet_private_1b.subnet.id }}"
       register: private_rt
 
-
-          # Database Route Table with subnets
+    # Database Route Table with subnets
     - name: Create Database Route Table and associate subnets
       amazon.aws.ec2_vpc_route_table:
-          vpc_id: "{{ vpc.vpc.id }}"
-          region: "{{ region }}"
-          state: present
-          tags:
-            Name: "prassadh-db-rt"
-          subnets:
-            - "{{ subnet_db_1a.subnet.id }}"
-            - "{{ subnet_db_1b.subnet.id }}"
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ region }}"
+        state: present
+        tags: { Name: "prassadh-db-rt" }
+        subnets:
+          - "{{ subnet_db_1a.subnet.id }}"
+          - "{{ subnet_db_1b.subnet.id }}"
       register: db_rt
-
 
     # Security Groups
     - name: Bastion SG
