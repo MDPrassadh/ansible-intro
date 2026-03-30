@@ -6,10 +6,10 @@
 
   vars:
     vpc_id: "vpc-05170b8abe4d7792b"
-    subnet_frontend: "subnet-01b784284299163e3"
-    subnet_backend: "subnet-06d34df27c64605ce"
-    subnet_mysql: "subnet-08bb5b99a75588b1c"
-    subnet_bastion: "subnet-0fff9fc599d24bc7c"
+    subnet_frontend: "subnet-01b784284299163e3" # us-east-1b
+    subnet_backend: "subnet-06d34df27c64605ce"  # us-east-1a
+    subnet_mysql: "subnet-08bb5b99a75588b1c"    # us-east-1a
+    subnet_bastion: "subnet-0fff9fc599d24bc7c"  # us-east-1a
 
     sg_frontend: "sg-0434875cae6b609aa"
     sg_backend: "sg-076f74fdfe5212b57"
@@ -58,10 +58,10 @@
         overwrite: true
       loop:
         - { name: "{{ zone }}", value: "{{ frontend_public_ip }}" }                # root record
-        - { name: "frontend.{{ zone }}", value: "{{ frontend_public_ip }}" }
+        - { name: "frontend.{{ zone }}", value: "{{ frontend_private_ip }}" }
         - { name: "backend.{{ zone }}", value: "{{ backend_private_ip }}" }
         - { name: "mysql.{{ zone }}", value: "{{ mysql_private_ip }}" }
-        - { name: "bastion.{{ zone }}", value: "{{ bastion_public_ip }}" }
+        - { name: "bastion.{{ zone }}", value: "{{ bastion_private_ip }}" }
 
 
 
