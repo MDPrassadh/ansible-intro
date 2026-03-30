@@ -55,7 +55,7 @@
     - name: Create Route53 records in public zone
       amazon.aws.route53:
         state: present
-        hosted_zone_id: "{{ public_zone_id }}"   # FIXED
+        hosted_zone_id: "{{ public_zone_id }}"   # Correct param
         record: "{{ item.name }}"
         type: A
         ttl: 60
@@ -70,7 +70,7 @@
     - name: Create Route53 records in private zone
       amazon.aws.route53:
         state: present
-        hosted_zone_id: "{{ private_zone_id }}"   # FIXED
+        hosted_zone_id: "{{ private_zone_id }}"   # Correct param
         record: "{{ item.name }}"
         type: A
         ttl: 60
