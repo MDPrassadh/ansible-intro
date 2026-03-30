@@ -58,10 +58,10 @@
         overwrite: true
       loop:
         - { name: "{{ zone }}", value: "{{ frontend_public_ip }}" }                # root record
-        - { name: "frontend.{{ zone }}", value: "{{ frontend_private_ip }}" }
+        - { name: "frontend.{{ zone }}", value: "{{ frontend_public_ip }}" }
         - { name: "backend.{{ zone }}", value: "{{ backend_private_ip }}" }
         - { name: "mysql.{{ zone }}", value: "{{ mysql_private_ip }}" }
-        - { name: "bastion.{{ zone }}", value: "{{ bastion_private_ip }}" }
+        - { name: "bastion.{{ zone }}", value: "{{ bastion_public_ip }}" }
 
 
 
