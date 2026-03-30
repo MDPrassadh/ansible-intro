@@ -6,7 +6,7 @@
 
   vars:
     vpc_id: "vpc-05170b8abe4d7792b"
-    subnet_frontend: "subnet-0fff9fc599d24bc7c"
+    subnet_frontend: "subnet-01b784284299163e3"
     subnet_backend: "subnet-06d34df27c64605ce"
     subnet_mysql: "subnet-08bb5b99a75588b1c"
     subnet_bastion: "subnet-0fff9fc599d24bc7c"
