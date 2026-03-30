@@ -6,10 +6,10 @@
 
   vars:
     vpc_id: "vpc-05170b8abe4d7792b"
-    subnet_frontend: "subnet-01b784284299163e3" # us-east-1b frontend subnet
-    subnet_backend: "subnet-06d34df27c64605ce"  # us-east-1a backend subnet
-    subnet_mysql: "subnet-08bb5b99a75588b1c"    # us-east-1a database subnet
-    subnet_bastion: "subnet-0fff9fc599d24bc7c"  # us-east-1a public subnet
+    subnet_frontend: "subnet-01b784284299163e3"
+    subnet_backend: "subnet-06d34df27c64605ce"
+    subnet_mysql: "subnet-08bb5b99a75588b1c"
+    subnet_bastion: "subnet-0fff9fc599d24bc7c"
 
     sg_frontend: "sg-0434875cae6b609aa"
     sg_backend: "sg-076f74fdfe5212b57"
@@ -20,6 +20,10 @@
     region: "us-east-1"
     zone: "jioairlines.online"
     key_name: "nv-ansible"
+
+    # Explicit zone IDs
+    public_zone_id: "Z03935303DMMJM97SI3N5"
+    private_zone_id: "Z0431543MIZJIID5SGPG"
 
     instances:
       - mysql
@@ -51,14 +55,14 @@
     - name: Create Route53 records in public zone
       amazon.aws.route53:
         state: present
-        zone: "{{ zone }}"
+        zone_id: "{{ public_zone_id }}"
         record: "{{ item.name }}"
         type: A
         ttl: 60
         value: "{{ item.value }}"
         overwrite: true
       loop:
-        - { name: "{{ zone }}", value: "{{ frontend_public_ip }}" }                # root record
+        - { name: "{{ zone }}", value: "{{ frontend_public_ip }}" }
         - { name: "frontend.{{ zone }}", value: "{{ frontend_public_ip }}" }
         - { name: "bastion.{{ zone }}", value: "{{ bastion_public_ip }}" }
 
@@ -66,7 +70,7 @@
     - name: Create Route53 records in private zone
       amazon.aws.route53:
         state: present
-        zone: "{{ zone }}"
+        zone_id: "{{ private_zone_id }}"
         record: "{{ item.name }}"
         type: A
         ttl: 60
@@ -75,6 +79,7 @@
       loop:
         - { name: "backend.{{ zone }}", value: "{{ backend_private_ip }}" }
         - { name: "mysql.{{ zone }}", value: "{{ mysql_private_ip }}" }
+
 
 
 
