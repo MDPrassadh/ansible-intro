@@ -4,9 +4,9 @@
   collections:
     - amazon.aws
   vars:
-    region: "us-east-1"
+    region: "ap-south-1"
     vpc_cidr: "10.0.0.0/16"
-    vpc_name: "expense-tracker"
+    vpc_name: "expense-tracker-vpc"
 
   tasks:
     - name: Create VPC

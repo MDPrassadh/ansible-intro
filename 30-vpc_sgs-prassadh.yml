@@ -8,7 +8,6 @@
     region: "ap-south-1"
     vpc_name: "prassadh-ap-1-vpc"
     cidr_block: "10.0.0.0/16"
-    my_ip: "203.0.113.25/32"   # <-- Replace with YOUR actual public IPv4 address
 
   tasks:
     # VPC
@@ -89,16 +88,12 @@
       register: igw
 
     # Allocate Elastic IP for NAT
-    # Allocate Elastic IP for NAT Gateway (idempotent)
-    - name: Ensure Elastic IP for NAT Gateway exists
+    - name: Allocate Elastic IP for NAT Gateway
       amazon.aws.ec2_eip:
         region: "{{ region }}"
         state: present
-      # Give it a tag so we can find it later
-        tags:
-          Name: "prassadh-nat-eip"
+        tags: { Name: "prassadh-nat-eip" }
       register: nat_eip
-
 
     # NAT Gateway (example in public-1a)
     - name: Create NAT Gateway
@@ -162,7 +157,21 @@
         rules:
           - proto: tcp
             ports: 22
-            cidr_ip: "{{ my_ip }}"
+            cidr_ip: "0.0.0.0/0"   # SSH open to world
+        rules_egress:
+          - proto: -1
+            cidr_ip: "0.0.0.0/0"
+
+    - name: Workspace SG
+      amazon.aws.ec2_group:
+        name: prassadh-workspace
+        description: Workspace SG
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ region }}"
+        rules:
+          - proto: tcp
+            ports: 22
+            group_name: prassadh-bastion   # SSH only from Bastion
         rules_egress:
           - proto: -1
             cidr_ip: "0.0.0.0/0"
@@ -198,6 +207,9 @@
             ports: 22
             group_name: prassadh-bastion
         rules_egress:
+          - proto: tcp
+            ports: 3306
+            group_name: prassadh-database
           - proto: -1
             cidr_ip: "0.0.0.0/0"
 
