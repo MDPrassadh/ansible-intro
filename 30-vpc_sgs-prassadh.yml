@@ -1,4 +1,4 @@
-- name: Create VPC, Subnets, IGW, NAT, and SGs
+- name: Create VPC, Subnets, IGW, NAT, and SGs full 
   hosts: local
   connection: local
   collections:
