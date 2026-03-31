@@ -23,7 +23,7 @@
 
     # Explicit zone IDs
     public_zone_id: "Z03935303DMMJM97SI3N5"
-    private_zone_id: "Z0431543MIZJIID5SGPG"
+    #private_zone_id: "Z0431543MIZJIID5SGPG"
 
     instances:
       - mysql
